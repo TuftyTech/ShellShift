@@ -62,7 +62,11 @@ type Policy struct {
 	MaxAge time.Duration
 }
 
-// DefaultPolicy is tuned for a roughly four-hourly cadence.
+// DefaultPolicy is tuned for a roughly two-hourly cadence.
+//
+// The backoff is wall-clock time rather than a count of runs, and it stayed at four hours when the
+// cadence doubled: a node that has just failed sits out the next run, so the work spent on dead
+// nodes per day is roughly what it was and the extra runs go to new and proven ones.
 func DefaultPolicy() Policy {
 	return Policy{
 		BaseBackoff: 4 * time.Hour,

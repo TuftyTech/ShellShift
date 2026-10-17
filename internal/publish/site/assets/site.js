@@ -174,7 +174,7 @@
 
     tick();
     // A page left open in a tab crosses an edge without a reload. Once a minute is far more
-    // often than a four-hourly cadence needs and cheap enough not to matter.
+    // often than a two-hourly cadence needs and cheap enough not to matter.
     setInterval(tick, 60000);
   }
 

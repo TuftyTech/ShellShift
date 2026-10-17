@@ -2,9 +2,10 @@ name: publish
 
 on:
   schedule:
-    # Every four hours, offset off the hour: every project that asks for "every four hours"
-    # lands on :00, and the runner queue is the shared resource.
-    - cron: '17 */4 * * *'
+    # Every two hours, offset off the hour: every project that asks for a round interval lands
+    # on :00, and the runner queue is the shared resource. A measured run takes three to six
+    # minutes and the scheduler has started one half an hour late, so the slots never overlap.
+    - cron: '17 */2 * * *'
   workflow_dispatch:
 
 permissions: {}
@@ -57,7 +58,9 @@ jobs:
       - name: recover the previous ledger
         run: |
           mkdir -p .state
-          if curl -fsS --max-time 30 "$SITE_ORIGIN/state/ledger.json" -o .state/ledger.json; then
+          # --compressed: Pages serves the 17 MB ledger as 3.8 MB of gzip, but only to a client
+          # that asks. At twelve runs a day the difference is most of the site's own bandwidth.
+          if curl -fsS --compressed --max-time 30 "$SITE_ORIGIN/state/ledger.json" -o .state/ledger.json; then
             echo "recovered $(wc -c < .state/ledger.json) bytes of ledger"
           else
             echo "no previous ledger (first run, or the site is not published yet)"
@@ -137,3 +140,58 @@ jobs:
           path: dist
       - id: deployment
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  # A Pages deployment is not a push, so a repository that publishes only through the artifact
+  # never moves in "Recently updated", however often it runs. A push to any branch does. The subs
+  # branch is one orphan commit force-pushed over itself on every run: main gains nothing, the
+  # branch has no history to grow, and GitHub counts contributors on the default branch only.
+  # It is also a second address for the subscriptions, for networks that block github.io.
+  #
+  # Only the subscriptions are mirrored. network.json is 2 MB that only the dashboard reads, and
+  # every superseded copy stays in the repository's object store until GitHub collects it.
+  #
+  # A job of its own because it is the only one that writes to the repository, and the job that
+  # parses hostile input from public feeds should not hold that permission.
+  mirror:
+    name: mirror subscriptions to the subs branch
+    needs: collect
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+      actions: write
+    steps:
+      # This run's own Pages artifact, so the mirror is byte-identical to what was just deployed.
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: github-pages
+          path: ${{ runner.temp }}/pages
+
+      - name: push the subs branch
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          site="$RUNNER_TEMP/site"
+          mirror="$RUNNER_TEMP/mirror"
+          mkdir -p "$site" "$mirror"
+          tar -xf "$RUNNER_TEMP/pages/artifact.tar" -C "$site"
+          cp "$site"/sub_*.txt "$mirror"/
+          ls -l "$mirror"
+
+          cd "$mirror"
+          git init -q -b subs
+          git add -A
+          # Authored as the maintainer, like every other commit here, so no bot identity appears
+          # in the history of any branch.
+          git -c user.name=tuftyxxeW -c user.email=343729923+tuftyxxeW@users.noreply.github.com \
+            commit -q -m "subscriptions $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:refs/heads/subs
+
+      # A public repository's scheduled workflows are disabled after sixty days without activity,
+      # and a scheduled run does not count as activity. Re-enabling an enabled workflow restarts
+      # that clock without a commit.
+      - name: keep the schedule alive
+        if: github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/$GITHUB_REPOSITORY/actions/workflows/publish.yml/enable" --silent

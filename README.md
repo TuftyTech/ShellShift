@@ -142,8 +142,9 @@ Hysteria **v1** is rejected everywhere, deliberately and consistently. The prede
 
 ## Automation
 
-- Scheduled publish every four hours at `:17`, straight to GitHub Pages through the Pages artifact. Nothing generated is ever committed.
-- Ledger round trip: the run's memory (hashes and statistics only) is published with the site and fetched back by the next run. No cache, no extra branch.
+- Scheduled publish every two hours at `:17`, straight to GitHub Pages through the Pages artifact. Nothing generated is ever committed to `main`.
+- Mirror branch: every run also force-pushes the subscriptions to `subs` as a single orphan commit, so they have a second address on `raw.githubusercontent.com` and the branch never grows a history.
+- Ledger round trip: the run's memory (hashes and statistics only) is published with the site and fetched back by the next run. No cache, and never in git.
 - Publication guard: a run may replace what is live only if its result is plausible. An empty run never wipes the subscriptions.
 - The feed list lives in repository secrets and is masked line by line in the logs.
 - Prebuilt release binaries for Linux, macOS & Windows on amd64 & arm64, with SHA-256 checksums. <sub><code>new</code></sub>
@@ -229,6 +230,12 @@ https://tuftytech.github.io/ShellShift/sub_all.txt
 ```
 
 Swap `sub_all.txt` for `sub_wl.txt`, `sub_vless.txt`, `sub_vmess.txt`, `sub_trojan.txt`, `sub_ss.txt` or `sub_hy2.txt` to get a narrower list.
+
+If `github.io` is blocked on your network, every run mirrors the same files to the `subs` branch:
+
+```
+https://raw.githubusercontent.com/TuftyTech/ShellShift/subs/sub_all.txt
+```
 
 ### Running ShellShift yourself
 
@@ -397,7 +404,7 @@ internal/config       explicit configuration loading
 - **The dialer is handed a resolved address, never a hostname.** Given a name, an in-process outbound would need sing-box DNS, routing and service registries reachable from hostile input (`INV-33`, `INV-48`).
 - **Identity is structural and hashed**, because the tuple contains a credential and the key is written to logs, state and the dashboard (`INV-21`).
 - **Assembling a result and publishing it are separate.** `pipeline.Runner` never writes; `publish.Guard` decides. The predecessor emptied every subscription file on a run with no survivors (`INV-43`).
-- **Artifacts are never committed.** The predecessor committed ~406 KB of regenerated files per run, six times a day.
+- **Artifacts are never committed to `main`.** The predecessor committed ~406 KB of regenerated files per run, six times a day. The `subs` mirror is one orphan commit replaced on every run, so it holds a single copy and no history.
 
 </details>
 

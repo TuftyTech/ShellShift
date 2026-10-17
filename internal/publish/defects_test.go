@@ -605,7 +605,7 @@ func TestTheStaleBandIsReachableWithoutARebuild(t *testing.T) {
 	}
 
 	// The edges are rendered from the Go constants and read back by the script. A second copy
-	// of "five hours" inside site.js would be a threshold that could drift from this one with
+	// of "three hours" inside site.js would be a threshold that could drift from this one with
 	// nothing in the tree to notice.
 	for attr, want := range map[string]time.Duration{
 		"data-live-hours":  FreshnessLiveUntil,

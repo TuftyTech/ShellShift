@@ -398,7 +398,7 @@ func (r *Runner) locate(ctx context.Context, entries []publish.Entry, res *Resul
 //
 //  1. Nodes with a proof on record first. A node that worked last run is the best single
 //     predictor available of a node that works this run, and it is also what the visitor sees as
-//     continuity rather than a subscription that reshuffles wholesale every four hours.
+//     continuity rather than a subscription that reshuffles wholesale every two hours.
 //  2. Then by the yield of the feed that offered it. Measured on the real corpus, one feed
 //     produced 48 percent of all working nodes from 3 percent of the parse volume, so this is
 //     not a marginal signal.

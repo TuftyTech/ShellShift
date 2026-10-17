@@ -158,7 +158,7 @@ func TestFreshnessIsBoundToTheTimestamp(t *testing.T) {
 		want string
 	}{
 		{2 * time.Hour, FreshnessLive},
-		{6 * time.Hour, FreshnessAging},
+		{4 * time.Hour, FreshnessAging},
 		{30 * time.Hour, FreshnessStale},
 	}
 	for _, tc := range cases {

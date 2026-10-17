@@ -162,7 +162,7 @@ func TestHeaderIsPresentAndIntervalMatchesCadence(t *testing.T) {
 		t.Fatalf("first line = %q", lines[0])
 	}
 	// The predecessor published six while running every four hours (GHOST-024).
-	if lines[1] != "#profile-update-interval: 4" {
+	if lines[1] != "#profile-update-interval: 2" {
 		t.Fatalf("second line = %q", lines[1])
 	}
 }

@@ -156,4 +156,4 @@ func Render(b Bundle, entries []Entry, label func(Entry) string) (string, error)
 
 // updateIntervalHours must match the real cadence. The predecessor published six while
 // running every four hours (GHOST-024).
-const updateIntervalHours = 4
+const updateIntervalHours = 2

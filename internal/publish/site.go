@@ -149,7 +149,7 @@ const (
 	FreshnessUnknown = "unknown"
 )
 
-// freshnessFor bands an age against a roughly four-hourly cadence.
+// freshnessFor bands an age against a roughly two-hourly cadence.
 func freshnessFor(age time.Duration, known bool) string {
 	switch {
 	case !known:
@@ -165,11 +165,15 @@ func freshnessFor(age time.Duration, known bool) string {
 
 // The two band edges, exported because the page carries them as data attributes and the script
 // re-bands the strip from them as the page ages in a tab or on a host that serves a cached copy.
-// A second copy of "five hours" inside site.js would be a threshold that could drift from this
+// A second copy of "three hours" inside site.js would be a threshold that could drift from this
 // one with nothing to notice; rendering them means there is one number and the client reads it.
+//
+// Each edge is a whole number of runs plus an hour of scheduler lateness: live covers one run's
+// age and a late start, aging covers one run that never happened, and past that the pipeline has
+// stopped rather than slipped.
 const (
-	FreshnessLiveUntil  = 5 * time.Hour
-	FreshnessAgingUntil = 9 * time.Hour
+	FreshnessLiveUntil  = 3 * time.Hour
+	FreshnessAgingUntil = 5 * time.Hour
 )
 
 // BuildSiteData assembles what the page needs from a published payload.

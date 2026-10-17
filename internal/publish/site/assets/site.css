@@ -263,7 +263,7 @@ h1, h2 { margin: 0; }
 .readout .sep { color: var(--hairline-strong); }
 /* All four bands are in the markup and the container's attribute chooses one. Hiding them here
    rather than rendering only the current one is what lets the script re-band a static page from
-   the timestamp: the age it was built with stops being true four hours later, and the band that
+   the timestamp: the age it was built with stops being true two hours later, and the band that
    exists to report a stopped pipeline cannot report one it was rendered before.
    The stale band gets the colour, because it is the one a reader must not skim past. */
 .readout [data-band] { display: none; }
