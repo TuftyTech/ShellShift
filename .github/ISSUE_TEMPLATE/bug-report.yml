@@ -1,0 +1,103 @@
+name: 🐛 Bug Report
+description: something's broken, crashing or just acting weird
+labels:
+  - bug
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        heyy thanks for taking the time 🤍
+
+        psst, `shellshift doctor` takes two minutes and tells whether a run that proved nothing is about the nodes or about your machine. its output is very welcome below
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: before we start
+      options:
+        - label: i searched the [existing issues](https://github.com/TuftyTech/ShellShift/issues?q=is%3Aissue) (closed ones too), nobody reported this yet
+          required: true
+        - label: i removed real feed URLs, server addresses and credentials from everything i paste here
+          required: true
+  - type: input
+    id: version
+    attributes:
+      label: shellshift version
+      description: |
+        the output of `shellshift version`, or the commit you built from
+        please do NOT type "latest", it changes with every release
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: where
+    attributes:
+      label: where does it happen
+      options:
+        - decoding (a link is rejected or changed)
+        - verification (proof, latency, throughput)
+        - classification (whitelist, Reality masking)
+        - subscriptions (sub_*.txt, network.json)
+        - dashboard (the static site)
+        - workflows (ci, publish, release)
+        - other / not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: platforms
+    attributes:
+      label: platforms
+      description: every platform where it happens
+      multiple: true
+      options:
+        - GitHub Actions runner
+        - Linux
+        - macOS
+        - Windows
+  - type: dropdown
+    id: severity
+    attributes:
+      label: how bad is it
+      options:
+        - 💥 crash / the run won't start
+        - 🚫 something doesn't work
+        - 🤏 small glitch / looks off
+    validations:
+      required: true
+  - type: textarea
+    id: what_happened
+    attributes:
+      label: what happened
+      placeholder: the run finished, every subscription file was empty and the funnel said 0 proven
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: what did you expect instead
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: how to make it happen
+      description: the clearer the steps, the faster the fix
+      placeholder: |
+        1. build with `go build -tags with_utls ./cmd/shellshift`
+        2. run `shellshift run -config ... -dry-run`
+        3. boom
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: logs
+      description: |
+        the relevant part of the run log, or the output of `shellshift doctor`
+        secrets are redacted by the logger, but please double check before posting
+      render: text
+  - type: textarea
+    id: fix_idea
+    attributes:
+      label: any idea how to fix it?
+      description: totally optional, big brain moves welcome

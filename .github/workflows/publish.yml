@@ -1,0 +1,139 @@
+name: publish
+
+on:
+  schedule:
+    # Every four hours, offset off the hour: every project that asks for "every four hours"
+    # lands on :00, and the runner queue is the shared resource.
+    - cron: '17 */4 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  # A run in flight is allowed to finish. Cancelling mid-verification wastes the expensive part
+  # and publishes nothing; queueing costs only time.
+  group: publish
+  cancel-in-progress: false
+
+env:
+  GOFLAGS: -mod=readonly
+  # INV-49: without this tag every Reality node fails to construct and is silently dropped —
+  # 62% of the real catalogue, looking like the feeds degraded.
+  BUILD_TAGS: with_utls
+  SITE_ORIGIN: https://tuftytech.github.io/ShellShift
+
+jobs:
+  collect:
+    name: collect and publish
+    runs-on: ubuntu-latest
+    # The verification phase is bounded by the run budget in the configuration; this is the
+    # backstop. The predecessor had no timeout on any job, so a hung shard could burn six hours.
+    timeout-minutes: 25
+    # deploy-pages refuses a job without an environment ("Missing environment"). github-pages is
+    # created by the repository when Pages is set to GitHub Actions, and by default admits only main.
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          check-latest: false
+
+      - name: build
+        run: go build -tags "$BUILD_TAGS" -ldflags "-s -w -X main.version=${GITHUB_SHA::12}" -o shellshift ./cmd/shellshift
+
+      # State persistence without a write permission and without a cache.
+      #
+      # The ledger holds only identity hashes and statistics — no credentials, by design — so the
+      # previous run can publish it and this one can fetch it back from the live site. That keeps
+      # the source history free of generated state, needs no extra branch, and cannot silently
+      # expire the way a cache can. Losing it degrades gracefully: every node becomes due again.
+      - name: recover the previous ledger
+        run: |
+          mkdir -p .state
+          if curl -fsS --max-time 30 "$SITE_ORIGIN/state/ledger.json" -o .state/ledger.json; then
+            echo "recovered $(wc -c < .state/ledger.json) bytes of ledger"
+          else
+            echo "no previous ledger (first run, or the site is not published yet)"
+          fi
+
+      - name: collect, verify and publish
+        env:
+          # The feed lists live in these secrets and nowhere else. config/run.json carries the run
+          # settings and an empty source list, so a run without SHELLSHIFT_SOURCES refuses to start
+          # rather than publishing from a default nobody chose. The predecessor held its list in a
+          # repository secret *and* committed all 118 entries to a public tree: the secret protected
+          # nothing and there were two places to forget.
+          #
+          # run.json is committed and sourceless. The operator's own config/publish.json is ignored
+          # by git, so a private config cannot reach a public tree by being forgotten about.
+          #
+          # One URL per line: Actions masks a multi-line secret line by line, which is what keeps
+          # the feeds out of the log even though the run prints per-feed yield.
+          #
+          # They are read into intermediate names rather than straight into SHELLSHIFT_* because
+          # an absent secret expands to an empty string, and an empty override is a misconfigured
+          # secret rather than "use the file" — the binary refuses to start on one. So the real
+          # variable is exported only when the secret actually has content.
+          SOURCES_SECRET: ${{ secrets.SHELLSHIFT_SOURCES }}
+          WHITELIST_DOMAINS_SECRET: ${{ secrets.SHELLSHIFT_WHITELIST_DOMAINS }}
+          WHITELIST_NETWORKS_SECRET: ${{ secrets.SHELLSHIFT_WHITELIST_NETWORKS }}
+        run: |
+          # Failing here rather than letting the binary report "config: no sources" names the
+          # cause: the list is not missing from a file, it is missing from the secret.
+          if [ -z "$SOURCES_SECRET" ]; then
+            echo "::error::SHELLSHIFT_SOURCES is empty or unset, and the feed list is not in the repository. Set the secret; there is nothing to collect from."
+            exit 1
+          fi
+          export SHELLSHIFT_SOURCES="$SOURCES_SECRET"
+          echo "sources: from the repository secret"
+
+          # The whitelist decides the class that carries the project's central claim, so its
+          # absence is announced rather than left to look like a class nobody qualified for.
+          if [ -n "$WHITELIST_DOMAINS_SECRET" ]; then
+            export SHELLSHIFT_WHITELIST_DOMAINS="$WHITELIST_DOMAINS_SECRET"
+          else
+            echo "::warning::SHELLSHIFT_WHITELIST_DOMAINS is unset: no node will be classified as whitelisted by domain"
+          fi
+          if [ -n "$WHITELIST_NETWORKS_SECRET" ]; then
+            export SHELLSHIFT_WHITELIST_NETWORKS="$WHITELIST_NETWORKS_SECRET"
+          else
+            echo "::warning::SHELLSHIFT_WHITELIST_NETWORKS is unset: no node will be classified as whitelisted by network"
+          fi
+
+          ./shellshift run \
+            -config config/run.json \
+            -out dist \
+            -state .state/ledger.json
+
+      - name: render the site
+        run: |
+          ./shellshift site -data dist/network.json -out dist -origin "$SITE_ORIGIN"
+          # The ledger is published so the next run can find it. It is state, not a document, so
+          # it lives under its own path rather than beside the subscriptions.
+          mkdir -p dist/state
+          cp .state/ledger.json dist/state/ledger.json
+
+      - name: what is being published
+        run: |
+          echo "::group::artifact"
+          find dist -type f -printf '%10s  %p\n' | sort -k2
+          echo "::endgroup::"
+          echo "total: $(du -sh dist | cut -f1)"
+
+      # Node 24. The previous pins were the last Node 20 releases and the runner had started
+      # forcing them onto 24 with a deprecation annotation on every run; upload-pages-artifact is
+      # bumped for the same reason one level down — its v4 pinned upload-artifact v4.6.2, which is
+      # the SHA the annotation named. No input changed across any of the three bumps.
+      - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist
+      - id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

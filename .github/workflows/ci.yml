@@ -1,0 +1,92 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# SEC-036: ни один job не наследует права по умолчанию.
+permissions: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # SEC-027: никакого разрешения зависимостей в рантайме.
+  GOFLAGS: -mod=readonly
+  # INV-49: sing-box гейтит uTLS, а вместе с ним и клиент Reality, за этим тегом.
+  # Без него каждый Reality-узел не собирается и молча отбрасывается — 62% реального
+  # каталога, и выглядит это как деградация источников, а не как ошибка сборки.
+  BUILD_TAGS: with_utls
+
+jobs:
+  go:
+    name: go
+    runs-on: ubuntu-latest
+    timeout-minutes: 10          # PERF: у предшественника не было ни одного timeout-minutes
+    permissions:
+      contents: read
+    steps:
+      # SEC-024: каждый uses пинится по неизменяемому commit SHA, не по подвижному тегу.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          check-latest: false
+
+      - name: gofmt
+        run: |
+          # архив старого проекта исключается по пути, а не фильтрацией вывода
+          unformatted="$(gofmt -l $(find . -name '*.go' -not -path './docs/*') || true)"
+          if [ -n "$unformatted" ]; then
+            echo "::error::не отформатировано gofmt:"; echo "$unformatted"; exit 1
+          fi
+
+      - name: go vet
+        run: go vet -tags "$BUILD_TAGS" ./...
+
+      - name: go build
+        run: go build -tags "$BUILD_TAGS" ./...
+
+      - name: go test
+        run: go test -tags "$BUILD_TAGS" -race -count=1 ./... 2>&1 | tee test.log
+
+      # C4 у предшественника: сюита могла бесшумно исчезнуть через ImportError -> skipif,
+      # и pytest -q оставался зелёным с нулём тестов. Пропущенный тест = падение.
+      - name: пропущенных тестов быть не должно
+        run: |
+          go test -tags "$BUILD_TAGS" -v -count=1 ./... 2>&1 | tee -a test.log | grep -E '^\s*--- SKIP' && {
+            echo "::error::есть пропущенные тесты — гейт, который не гейтит, хуже отсутствия гейта"
+            exit 1
+          } || echo "пропущенных тестов нет"
+
+  vuln:
+    name: vulnerabilities
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+      # SEC-033
+      - name: govulncheck
+        run: |
+          go run golang.org/x/vuln/cmd/govulncheck@latest -tags with_utls ./...
+
+  hygiene:
+    name: hygiene
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+      - name: гейты гигиены
+        run: ./tools/hygiene.sh

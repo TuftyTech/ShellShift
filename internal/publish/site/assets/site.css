@@ -1,0 +1,1008 @@
+/* ShellShift — house style.
+ *
+ * Typography and controls follow https://tuftytech.github.io/, which is the house style for
+ * this project: one sans-serif declaration, monospace reserved for technical data, a 13 px body
+ * that lifts one step on wide viewports instead of restating every size at the breakpoint, and
+ * micro-labels capped at +0.11em. Zero web fonts is not only a byte saving — this page carries
+ * `default-src 'self'`, so a font or an icon sprite from a CDN would not load at all.
+ *
+ * The palette is the reference mockup's, measured off it rather than guessed: surface #EDEEF4,
+ * ink #191C2B, one lavender accent. Every token below was then re-stepped so its contrast
+ * against its own surface is a number, not a hope — palette_test.go is the receipt for the table
+ * and the validator run. The dark theme is selected, not an inversion: its four coloured
+ * tokens sit inside the OKLCH lightness band a dark surface needs, which the previous dark
+ * values did not.
+ *
+ * Ghost in the Shell contributes exactly four devices and no more: one cold accent used only
+ * for state and identity, indexed uppercase micro-labels, corner brackets on the funnel band
+ * alone, and the hairline status readout under the header. A motif on every panel is wallpaper.
+ */
+
+:root {
+  color-scheme: light;
+  --surface: #EDEEF4;
+  --surface-2: #F5F6FB;
+  --ink: #191C2B;
+  --ink-2: #555772;
+  --ink-3: #6A6B7F;
+  --chip: #E3E2F1;
+  --hairline: #DBDCE6;
+  --hairline-strong: #A9ABBD;
+  /* Icons sit one step quieter than body text and go to full ink on hover. That is the
+     reference's rule for them, and it is what stops a row of glyphs reading as decoration. */
+  --icon: #6A6B7F;
+  /* One cold accent, used only for state and identity. Never for decoration. 5.43:1. */
+  --accent: #5D53B1;
+  --accent-quiet: #E3E2F1;
+  --ok: #077649;
+  --warn: #875804;
+  --bad: #AE2E2C;
+
+  /* The hero band is dark in both themes: the illustration is dense and cool, and bleaching
+     it until dark text could sit on top would cost more than the band gains. So the hero
+     carries its own ink, and it is the same in light and dark. Measured against the scrimmed
+     art at its brightest decile: 5.8:1. */
+  --h-ink: #E4E7F6;
+  --h-ink-2: #C2C5D8;
+  --h-surface: #10131C;
+
+  /* Shape. Three radii and nothing else, at the reference's softness. */
+  --r-chip: 6px;
+  --r-card: 10px;
+  --r-row: 6px;
+  --gap: 16px;
+  --measure: 68ch;
+
+  /* One duration, one curve, from the reference. They apply to controls only: a button whose
+     hover state snaps reads as broken, and nothing else on this page moves. */
+  --swap: 160ms;
+  --ease: cubic-bezier(0.2, 0, 0, 1);
+
+  --mono: ui-monospace, monospace;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --surface: #10131C;
+  --surface-2: #171B27;
+  --ink: #E4E7F6;
+  --ink-2: #AAACC1;
+  --ink-3: #8C8E9F;
+  --chip: #1E2231;
+  --hairline: #262B3B;
+  --hairline-strong: #4A5169;
+  --icon: #8C8E9F;
+  --accent: #7F78D6;
+  --accent-quiet: #1E2231;
+  --ok: #2A9D67;
+  --warn: #B17922;
+  --bad: #D55851;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --surface: #10131C;
+    --surface-2: #171B27;
+    --ink: #E4E7F6;
+    --ink-2: #AAACC1;
+    --ink-3: #8C8E9F;
+    --chip: #1E2231;
+    --hairline: #262B3B;
+    --hairline-strong: #4A5169;
+    --icon: #8C8E9F;
+    --accent: #7F78D6;
+    --accent-quiet: #1E2231;
+    --ok: #2A9D67;
+    --warn: #B17922;
+    --bad: #D55851;
+  }
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+/* The type scale is calibrated for a phone at arm's length; the whole set lifts one step on a
+   wide viewport rather than every size being restated for the breakpoint. */
+html {
+  font-size: 100%;
+  background: var(--surface);
+  -webkit-text-size-adjust: 100%;
+}
+@media (min-width: 700px) { html { font-size: 112.5%; } }
+
+/* The only sans-serif declaration in this file. Every rule below sets size and weight and
+   inherits the family, which is what keeps it to one. */
+body {
+  margin: 0;
+  background: var(--surface);
+  color: var(--ink);
+  font-family: system-ui, sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.55;
+}
+
+/* Both languages are in the markup and this hides the one the document is not showing. It is a
+   CSS rule rather than DOM work on load, so the first paint is already correct in the page's
+   language and needs no script at all; the script only swaps the attribute. */
+html[data-lang="ru"] [lang="en"],
+html[data-lang="en"] [lang="ru"] { display: none; }
+
+/* The only monospace declaration, and it is for technical data alone — counts, hashes,
+   timestamps, latencies. Never prose, never a label. */
+.mono, .idx, .num, .readout, .ep-url, .ntab td, .brandsub {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+/* Tabular figures give every digit the width of a zero, which makes a large standalone number
+   look loose. So they are for columns only, and the one display figure opts back out. */
+.num.big { font-variant-numeric: normal; }
+
+.muted { color: var(--ink-3); }
+.grow { flex: 1; }
+
+.sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
+  overflow: hidden; clip-path: inset(50%); white-space: nowrap;
+}
+
+/* Icons: Material Symbols, inlined as path data by the icon template function. Sized in rem so
+   they track the type scale, filled from a token so they follow the theme, and never given a
+   size in the markup — see internal/publish/icons.go. */
+.i { flex: none; width: 1rem; height: 1rem; fill: var(--icon); }
+
+/* One measure for every band on the page, so the header, the hero copy and the table share an
+   edge. Wide, because a seven-column table is the widest thing here. */
+.wrap { max-width: 62rem; margin: 0 auto; padding: 0 20px; }
+
+h1, h2 { margin: 0; }
+
+/* Section labels: the reference's micro-label, and Ghost-in-the-Shell device two. +0.11em is
+   the reference's measured ceiling for letter-spacing and no rule in this file exceeds it. */
+.label {
+  font-size: 0.75rem; font-weight: 600;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--ink-3);
+  margin: 0 0 14px;
+}
+
+.note {
+  margin: 16px 0 0;
+  max-width: var(--measure);
+  color: var(--ink-2);
+}
+.empty { color: var(--ink-2); }
+
+.warn {
+  border-left: 2px solid var(--warn);
+  padding: 8px 12px; margin: 0;
+  background: var(--surface-2);
+  color: var(--ink);
+}
+
+/* --- chrome ------------------------------------------------------------- */
+
+/* The bar wraps rather than overflows. The Russian labels are wider than the English ones, and
+   a row that cannot wrap pushes the whole document into a horizontal scroll at 360 px. */
+.bar {
+  display: flex; align-items: center; flex-wrap: wrap;
+  gap: var(--gap); row-gap: 8px;
+  min-height: 3.5rem;
+  max-width: 62rem; margin: 0 auto;
+  padding: 8px 20px;
+}
+.brand { display: flex; flex-direction: column; line-height: 1.15; }
+.wordmark {
+  font-size: 1.25rem; font-weight: 700; letter-spacing: 0;
+  text-transform: uppercase;
+}
+.brandsub {
+  font-size: 0.6875rem; font-weight: 500; letter-spacing: 0.08em;
+  text-transform: uppercase; color: var(--ink-3);
+}
+.bar-tools { margin-left: auto; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.skip { position: absolute; left: -9999px; }
+.skip:focus {
+  position: static; left: auto;
+  display: inline-block; padding: 6px 10px;
+  background: var(--accent-quiet); color: var(--ink);
+}
+
+/* The language control: both languages always shown, the current one the pressed half. That
+   silhouette is the reference's. Each half is a real link to a prerendered page, so switching
+   works with JavaScript off; with it, the script swaps an attribute and keeps the scroll. */
+.langswitch { display: flex; gap: 6px; }
+
+/* One silhouette for every control in the bar.
+   Deviation from the reference, deliberately: its controls are ~34x30 px, which clears WCAG
+   2.5.8 but not the 44 px of 2.5.5, and this page already met 2.5.5. Matching the reference
+   exactly here would have been a measurable accessibility regression to gain nothing visible,
+   so the shape, border, radius and type are the reference's and the target size is ours. */
+.langswitch > *, .themebtn, .barlink {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-width: 44px; min-height: 44px; padding: 0 10px;
+  font-size: 0.75rem; font-weight: 600; letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--ink-3); background: transparent;
+  border: 1px solid transparent; border-radius: var(--r-chip);
+  text-decoration: none; cursor: pointer;
+  transition: background var(--swap) var(--ease), color var(--swap) var(--ease),
+              border-color var(--swap) var(--ease);
+}
+.langswitch > * { border-color: var(--hairline); background: var(--surface-2); }
+.langswitch [aria-current="page"] {
+  background: var(--ink); color: var(--surface); border-color: var(--ink);
+  cursor: default;
+}
+.langswitch a:hover { border-color: var(--hairline-strong); color: var(--ink); }
+.barlink:hover, .themebtn:hover { color: var(--ink); background: var(--surface-2); }
+.barlink:hover .i, .themebtn:hover .i { fill: var(--ink); }
+
+/* The theme control carries no state of its own: with two themes the page is the state, and the
+   button only has to say what the next click does. */
+.themebtn { padding: 0; }
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* The status readout under the header: machine chrome carrying real values, not a slogan. */
+.readout {
+  display: flex; align-items: center; gap: 8px; flex-wrap: wrap;
+  max-width: 62rem; margin: 0 auto;
+  padding: 8px 20px;
+  border-top: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+  font-size: 0.75rem; font-weight: 500; line-height: 1.4;
+  color: var(--ink-2);
+}
+.readout .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--ink-3); }
+.readout[data-freshness="live"] .dot { background: var(--ok); }
+.readout[data-freshness="aging"] .dot { background: var(--warn); }
+.readout[data-freshness="stale"] .dot { background: var(--bad); }
+.readout .sep { color: var(--hairline-strong); }
+/* All four bands are in the markup and the container's attribute chooses one. Hiding them here
+   rather than rendering only the current one is what lets the script re-band a static page from
+   the timestamp: the age it was built with stops being true four hours later, and the band that
+   exists to report a stopped pipeline cannot report one it was rendered before.
+   The stale band gets the colour, because it is the one a reader must not skim past. */
+.readout [data-band] { display: none; }
+.readout[data-freshness="live"] [data-band="live"],
+.readout[data-freshness="aging"] [data-band="aging"],
+.readout[data-freshness="stale"] [data-band="stale"],
+.readout[data-freshness="unknown"] [data-band="unknown"] { display: inline; }
+.readout[data-freshness="stale"] [data-band="stale"] { color: var(--bad); font-weight: 600; }
+
+/* --- sections ----------------------------------------------------------- */
+
+main > section { padding: 2.5rem 0; }
+main > section + section { border-top: 1px solid var(--hairline); }
+.truth { padding: 1.25rem 0; background: var(--surface-2); }
+
+/* --- hero --------------------------------------------------------------- */
+
+/* The band is dark in both themes and that is the decision, not an oversight. The illustration
+   is a dense, cool night scene: to put ink-on-light text over it the art would need a white
+   veil at 51% before the worst pixel reached 4.5:1, which erases the atmosphere exactly where
+   the atmosphere is. A dark scrim reaches the same contrast at 42% and leaves the art intact. */
+main > section.hero { padding: 0; }
+.hero {
+  position: relative;
+  overflow: hidden;
+  background: var(--h-surface);
+}
+/* The art box has the illustration's own aspect ratio, and that is the whole of the framing rule.
+   Under `object-fit: cover` the image is scaled by max(boxW/srcW, boxH/srcH), so when the two
+   ratios agree the scale is the same in both directions and nothing is cropped at all: the band
+   shows the illustration as it was drawn, at every window width.
+
+   Two earlier versions of this rule were wrong in opposite directions, and both are worth
+   remembering. `width: 56%` made the cover scale `0.56 · viewport / 900`, so the visible fraction
+   of the source was 45% at 1440 px, 38% at 1720 and 34% at 1920 — the wider the monitor, the
+   deeper the zoom, and nobody saw the same framing. Replacing that with a stated `4 / 3` box made
+   the crop constant and constantly wrong: a 4:3 window over a 2:3 source is exactly half of it,
+   which is why the band held a face and nothing else.
+
+   The scale now lives in the band's height, which is where it can be reasoned about: the art is
+   2/3 of the band wide, so across the band's 416..736 px it is 277..491 px — about a fifth of the
+   window on every display, growing with it. `max-width` guards the one shape that would otherwise
+   break the layout, a narrow but very tall window, where the band sits at its floor while the copy
+   column is already thin.
+
+   The mask still dissolves the left edge into the copy column, and it lands on the image rather
+   than on empty box space precisely because the box and the image are now the same rectangle —
+   with `contain` and a mismatched box it would have faded a transparent margin instead. */
+.hero-art {
+  position: absolute; top: 0; right: 0;
+  height: 100%; width: auto; aspect-ratio: 2 / 3; max-width: 46%;
+  object-fit: cover; object-position: center;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 44%);
+  mask-image: linear-gradient(90deg, transparent 0, #000 44%);
+}
+/* The scrim. Its stops are measured, not chosen, and they were re-measured when the
+   illustration was replaced: the previous art had a pale fog on its left half whose brightest
+   decile was #7A7B95, and holding light ink at 4.5:1 over that needed a veil that never thinned
+   below 42%. The current art's left half reads #262833 — near the band's own surface — so the
+   same ink clears 13:1 at the copy edge under a much lighter wash, and the wash was lightened
+   rather than kept: a 56% veil over an already-dark painting is throwing the painting away.
+   TestHeroInkClearsTheScrimmedArt now composites the alpha this ramp actually reaches at the
+   copy column's edge instead of asserting a floor inherited from the retired asset. */
+.hero::after {
+  content: ""; position: absolute; inset: 0;
+  background: linear-gradient(90deg,
+    rgba(16, 19, 28, 0.86) 0%, rgba(16, 19, 28, 0.62) 32%,
+    rgba(16, 19, 28, 0.30) 58%, rgba(16, 19, 28, 0.06) 80%,
+    rgba(16, 19, 28, 0) 100%);
+}
+/* A stated two-column grid, which is the fix for the band reading as text pushed against the
+   left edge. The copy used to be an h1 at 24ch and a paragraph at 46ch sitting at the start of a
+   62rem wrap: about 400 px of the band between the end of the copy and the point where the
+   illustration became legible belonged to nothing at all. Now that gap is column two, and the
+   column widths say so. align-items centres the stack, so shortening the band cannot leave a
+   block of empty scrim underneath it either. */
+.hero-body {
+  position: relative; z-index: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 33rem) 1fr;
+  align-items: center;
+  padding: 3.25rem 20px;
+  /* The band's height is the art's scale, so it follows the display instead of sitting at a
+     constant. `vw` is the term that matters — the illustration should be bigger on a bigger
+     monitor — and `vh` caps it on a short window, where a tall band would push the funnel below
+     the fold on the screen that has least room for it. The floor keeps the figure readable on a
+     laptop; the ceiling stops a 4K display from turning the hero into the whole page. */
+  min-height: clamp(26rem, min(30vw, 58vh), 46rem);
+}
+/* The wrapper is structural, not cosmetic: with h1, lede and CTA as direct children of the grid
+   above they would flow into separate cells instead of stacking in column one. */
+.hero-copy { min-width: 0; }
+.hero + .truth { border-top: 0; }
+
+.hero h1 {
+  max-width: 25ch;
+  /* A single long compound word — ПРОКСИ-КОНФИГУРАЦИИ — is wider than a 360 px phone. */
+  overflow-wrap: break-word;
+  font-size: 2.375rem; font-weight: 700; line-height: 1.1;
+  letter-spacing: 0.01em; text-transform: uppercase;
+  color: var(--h-ink);
+  margin: 0 0 1.125rem;
+}
+/* 54ch, not 46ch. At 46ch inside a column this wide the lede broke into four short ragged
+   lines, which is what made the copy read as a stranded margin rather than a column. */
+.hero .lede { max-width: 54ch; color: var(--h-ink-2); margin: 0; }
+
+/* Last child of the copy column now that the tiles and the stamp are gone, so no trailing
+   margin: it would reappear as dead scrim under the buttons. */
+.cta { display: flex; flex-wrap: wrap; gap: 12px; margin: 1.875rem 0 0; }
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 44px; padding: 0 20px;
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  border-radius: var(--r-row); text-decoration: none;
+  transition: background var(--swap) var(--ease), border-color var(--swap) var(--ease);
+}
+.btn-1 { background: var(--h-ink); color: var(--h-surface); border: 1px solid var(--h-ink); }
+.btn-1:hover { background: #FFFFFF; }
+.btn-2 { color: var(--h-ink); border: 1px solid rgba(228, 231, 246, 0.45); }
+.btn-2:hover { border-color: var(--h-ink); }
+
+/* There is no stat-tile row here any more, and that is the change rather than a restyle. The
+   band carried four tiles — proven, countries, protocols, yield — and every figure in them is
+   published a second time further down the page: proven and yield are the funnel's last row,
+   countries and protocols are the length of a band in the catalogue mix. The timestamp tile went
+   with them, because the readout strip immediately above this band already carries it together
+   with the age and the freshness. One number, one home. */
+
+/* --- truth strip -------------------------------------------------------- */
+
+.truth-row { display: flex; gap: 12px; }
+.truth .i-note { width: 1.25rem; height: 1.25rem; margin-top: 2px; fill: var(--accent); }
+.truth .label { margin: 0 0 2px; }
+.truth p { margin: 0; max-width: var(--measure); }
+
+/* --- subscriptions ------------------------------------------------------ */
+
+.ep-list {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 10px;
+  /* Wide enough that the subscription URL is readable in full. It is visible text for a
+     reason: when the clipboard is unavailable the fallback is selecting it, and a truncated
+     field cannot be that. */
+  /* min() and not a bare 27rem: auto-fill creates a track of at least the stated width even
+     when the container is narrower, so a bare value puts a 432 px column inside a 350 px phone
+     and pushes the whole document into a horizontal scroll. */
+  grid-template-columns: repeat(auto-fill, minmax(min(27rem, 100%), 1fr));
+  /* One height for every row. Without it each card is as tall as its own text, and a row whose
+     left card explains itself in three lines beside a right card that explains itself in one
+     reads as a broken layout rather than as two different files. */
+  grid-auto-rows: 1fr;
+}
+.ep {
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-card);
+  background: var(--surface-2);
+  padding: 12px 14px;
+  /* A column, so the note can be pushed to the foot of a card that the row track has made taller
+     than its own content. */
+  display: flex; flex-direction: column;
+}
+/* Name, count and action on one line; the URL on its own line below. The action used to sit
+   under the field and right-aligned, which put a 130x44 hole in the left of every card — eight
+   cards, eight holes, and the densest band on the page was mostly empty. */
+.ep-head { display: flex; align-items: center; gap: 12px; margin-bottom: 8px; }
+.ep-title { font-weight: 600; }
+.ep-count { font-size: 0.75rem; color: var(--ink-3); margin-left: auto; white-space: nowrap; }
+
+/* The URL keeps the whole width of the card. Side by side with the button it was clipped at two
+   columns, and a clipped field cannot be the fallback for a clipboard that is unavailable —
+   which is the entire reason it is visible text. */
+.ep-url {
+  display: block; width: 100%;
+  padding: 8px 10px;
+  font-size: 0.75rem; line-height: 1.4;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-row);
+}
+.ep-copy {
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 44px; padding: 0 14px;
+  font-size: 0.75rem; font-weight: 700;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--surface); background: var(--ink);
+  border: 0; border-radius: var(--r-row);
+  cursor: pointer; white-space: nowrap;
+  transition: opacity var(--swap) var(--ease), background var(--swap) var(--ease);
+}
+.ep-copy .i { fill: var(--surface); }
+.ep-copy:hover { opacity: .9; }
+
+/* The confirmed state is a CSS swap, not DOM surgery. Both icons and both labels ship inside
+   the button and the script sets one attribute; rewriting the button's text to say "copied" is
+   what deleted the icon along with it, and rewriting only the label would have left the
+   confirmation stuck in whichever language the page was rendered in. */
+.ep-copy .i-check, .ep-copy .lbl-done { display: none; }
+.ep-copy[data-state="copied"] { background: var(--ok); }
+.ep-copy[data-state="copied"] .i-copy, .ep-copy[data-state="copied"] .lbl-idle { display: none; }
+.ep-copy[data-state="copied"] .i-check { display: block; }
+.ep-copy[data-state="copied"] .lbl-done { display: inline; }
+
+/* An empty bundle is dimmed by its head and its field, not as a whole card. Dimming the card
+   dimmed the one paragraph that explains why it is empty along with it — the sentence a reader
+   needs most is the one the state would have hidden. */
+.ep-empty .ep-head, .ep-empty .ep-url { opacity: .55; }
+.ep-copy:disabled { cursor: not-allowed; background: var(--hairline-strong); }
+
+/* What the file holds, under the URL rather than over it: the field is the thing being copied
+   and must keep the top of the card. */
+.ep-note {
+  /* `auto` above, not a length: the note sits at the foot of the card, so the URL fields of a row
+     line up under their titles instead of drifting apart by the length of the sentence below. */
+  margin: 8px 0 0; margin-top: auto;
+  padding-top: 8px;
+  font-size: 0.75rem; line-height: 1.5;
+  color: var(--ink-3);
+}
+/* Why an empty class is empty. Marked, not merely grey: "0 nodes because a feed failed" and
+   "0 nodes because none qualified" are opposite facts about the run, and the second one is the
+   only one a reader would guess. */
+.ep-why {
+  margin: 8px 0 0;
+  padding-left: 10px;
+  border-left: 2px solid var(--warn);
+  font-size: 0.75rem; line-height: 1.5;
+  color: var(--ink-2);
+}
+
+/* --- how to connect ----------------------------------------------------- */
+
+/* Two columns: the sequence, and the note that belongs beside step one. Stacked, this section
+   was a 68ch measure at the left edge of a 62rem band with the right half empty. The aside is
+   narrower than the steps because it is an aside; auto-fit is not used here because the columns
+   are not peers and must not swap width. */
+.howto-cols {
+  display: grid; align-items: start;
+  gap: 1.25rem 3rem;
+  grid-template-columns: minmax(0, 36rem) minmax(0, 20rem);
+}
+.steps { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+/* No top margin in this position: it is a column, not something following the steps. The
+   hairline is what attaches it to them across the gap. */
+.note-aside {
+  margin: 0; padding-left: 14px;
+  border-left: 1px solid var(--hairline);
+}
+.steps li { display: grid; grid-template-columns: 2.5em 1fr; gap: 12px; align-items: baseline; }
+
+/* A leading index turns a list into an instrument readout. This is typography, not decoration,
+   and it costs nothing. */
+.idx { font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.11em; color: var(--ink-3); }
+
+/* --- node table --------------------------------------------------------- */
+
+.tools {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px;
+  margin: 0 0 14px;
+}
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip-btn {
+  min-height: 34px; padding: 0 12px;
+  font: inherit;
+  font-size: 0.6875rem; font-weight: 600;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--ink-2); background: var(--surface-2);
+  border: 1px solid var(--hairline); border-radius: var(--r-chip);
+  cursor: pointer;
+  transition: background var(--swap) var(--ease), color var(--swap) var(--ease),
+              border-color var(--swap) var(--ease);
+}
+.chip-btn:hover { border-color: var(--hairline-strong); color: var(--ink); }
+/* The pressed state is aria-pressed, and the styling follows it rather than a class of its own:
+   one source of truth means the control cannot look selected while telling a screen reader it
+   is not. */
+.chip-btn[aria-pressed="true"] {
+  color: var(--accent); background: var(--accent-quiet); border-color: var(--accent);
+}
+
+.find {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: auto;
+  padding: 0 12px;
+  min-height: 34px;
+  background: var(--surface-2);
+  border: 1px solid var(--hairline); border-radius: var(--r-chip);
+}
+.find:focus-within { border-color: var(--accent); }
+.find input {
+  font: inherit; font-size: 0.8125rem;
+  width: 15rem; max-width: 42vw;
+  color: var(--ink); background: transparent; border: 0; outline: 0;
+}
+.tally { font-size: 0.6875rem; color: var(--ink-3); margin: 0; }
+
+/* A seven-column data table scrolls sideways on a narrow viewport rather than folding into
+   cards. Folding would need a language-tagged label on every cell, which multiplies the one
+   piece of markup whose cost scales with the corpus. tabindex makes the scroll reachable from
+   the keyboard, which is the part of this pattern that usually gets left out. */
+/* The pane scrolls in both directions and has a ceiling. At 695 proven nodes the full-height
+   table was 35 627 px of a 38 541 px document, and it buried the funnel and the catalogue mix
+   below y=37 000. Every row is still in the document, so the filter and the search still run
+   over the whole catalogue and the table is complete with the script blocked; what is bounded
+   is how much of the page one band is allowed to be. */
+.tablewrap {
+  overflow: auto;
+  max-height: 30rem; overscroll-behavior: contain;
+  border: 1px solid var(--hairline); border-radius: var(--r-card);
+}
+.tablewrap:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.ntab { width: 100%; border-collapse: collapse; background: var(--surface-2); }
+/* The header row sticks, because a scrolled pane whose column names have left the top is a
+   grid of unlabelled values. Its rule is an inset shadow and not a border: with
+   border-collapse: collapse a collapsed border belongs to the table rather than to the cell,
+   and it does not travel with a sticky cell — the line simply stops being drawn. */
+.ntab th {
+  position: sticky; top: 0; z-index: 1;
+  text-align: left; white-space: nowrap;
+  padding: 10px 14px;
+  font-size: 0.6875rem; font-weight: 600;
+  letter-spacing: 0.11em; text-transform: uppercase;
+  color: var(--ink-3); background: var(--surface-2);
+  box-shadow: inset 0 -1px 0 var(--hairline);
+}
+.ntab td {
+  padding: 9px 14px;
+  font-size: 0.75rem; white-space: nowrap;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--hairline);
+}
+.ntab tr:last-child td { border-bottom: 0; }
+.ntab tbody tr:hover td { background: var(--surface); }
+.ntab td:first-child { padding-left: 12px; }
+/* One neutral chip for every protocol. Five pastel tints at the reference's saturation carry no
+   information a reader can decode, and spending the colour channel on them would leave nothing
+   for state — which is the only thing colour is for here. */
+.chip {
+  display: inline-block; padding: 3px 8px;
+  font-size: 0.6875rem; font-weight: 600;
+  letter-spacing: 0.06em; text-transform: uppercase;
+  color: var(--ink); background: var(--chip);
+  border-radius: var(--r-chip);
+}
+/* The one coloured thing in a row, and it is a word rather than a swatch: colour alone would
+   make the class unreadable to a reader who cannot see it, and the note under the table says
+   what WL means. */
+.ntab .wl { font-style: normal; font-weight: 700; color: var(--accent); }
+.ntab .mbps { display: block; color: var(--ink-3); }
+
+/* --- the funnel: the one element that carries the brand ------------------ */
+
+/* Corner brackets, drawn as eight gradients. They appear here and nowhere else: a motif on
+   every panel is wallpaper, and a bracket that looks like it means something must mean
+   something. */
+.bracketed {
+  position: relative;
+  max-width: 44rem;
+  padding: 20px;
+  background:
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 0 0 / 10px 1px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 0 0 / 1px 10px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 100% 0 / 10px 1px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 100% 0 / 1px 10px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 0 100% / 10px 1px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 0 100% / 1px 10px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 100% 100% / 10px 1px no-repeat,
+    linear-gradient(var(--hairline-strong), var(--hairline-strong)) 100% 100% / 1px 10px no-repeat;
+}
+
+/* The measure is on the bracketed frame above, not here: at full width the stage name sat at one
+   edge of a 62rem band and its figure at the other, 950 px apart with nothing between them to
+   carry the eye across — the same fault as the hero band, in a list. */
+.stages { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.stages li {
+  display: grid;
+  grid-template-columns: 2.5em 1fr auto auto;
+  align-items: baseline;
+  gap: 12px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--hairline);
+}
+.stages li:last-child { border-bottom: 0; }
+.stage-name { color: var(--ink-2); }
+.num { font-size: 1rem; font-weight: 600; }
+.drop { font-size: 0.75rem; color: var(--ink-3); }
+
+/* Exactly one figure at display size on the page: the survivors. The class is `big` and not
+   `hero` because it used to be `hero`, and `.hero::after` — the band's scrim — matched this <b>
+   as happily as it matched the band, painting a dark gradient rectangle across the number. A
+   pseudo-element keyed to a class paints on every element carrying it. The stat tiles in the band above are
+   deliberately a third of this size — a view gets one number at display scale, and this is the
+   number the whole project is about. */
+.survivors { padding-top: 14px; }
+.survivors .num.big {
+  font-size: 3rem; font-weight: 700; line-height: 1;
+  color: var(--accent);
+}
+
+/* --- the catalogue mix: protocols and countries ------------------------- */
+
+/* Two bands side by side, and each normalised to its own largest row rather than to a shared
+   axis: protocols and countries are not comparable quantities, and one axis across both would
+   invite exactly that comparison. auto-fit stacks them on a narrow viewport with no second
+   breakpoint. */
+.mixgrid {
+  display: grid; align-items: start;
+  gap: 1.75rem 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(19rem, 100%), 1fr));
+}
+/* The heading owns the list under it, and the hairline is what says so. The figure beside it is
+   the corpus total — the number the hero used to carry as a tile. */
+.sublabel {
+  display: flex; align-items: baseline; gap: 8px;
+  margin: 0 0 10px; padding-bottom: 6px;
+  font-size: 0.8125rem; font-weight: 600; color: var(--ink);
+  border-bottom: 1px solid var(--hairline);
+}
+.sublabel .mono { margin-left: auto; font-size: 0.75rem; font-weight: 500; color: var(--ink-3); }
+
+/* One grid for the whole band, and the rows are subgrids of it. This is the fix for bars that
+   could not be compared: with `display: grid` on each `li` instead, every row laid out its own
+   three columns, so the track began wherever that row's label happened to end — `vless` started
+   at 70 px and `shadowsocks` at 137 px — and two bars of the same length drawn from different
+   origins ended in different places. A chart whose baseline moves per row is measuring nothing.
+   The comment that used to sit here claimed the label column sized to the widest label in the
+   band; that is what subgrid does and there was none.
+
+   The fallback line matters: a browser without subgrid drops the second declaration and keeps
+   per-row columns, which is the old misalignment rather than three cells stacked vertically. */
+.bars {
+  list-style: none; margin: 0; padding: 0;
+  display: grid; gap: 6px 10px;
+  grid-template-columns: minmax(2.5em, auto) 1fr auto;
+}
+.bars li {
+  display: grid;
+  grid-template-columns: minmax(2.5em, auto) 1fr auto;
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+  align-items: center; gap: 10px;
+}
+/* The track is square on the left and rounded on the right so the fill's own square baseline
+   survives: a fully rounded track with overflow:hidden clips the fill at both ends, and a bar
+   rounded at its zero misreads its own origin. */
+.bar-track {
+  height: 12px; background: var(--chip);
+  border-radius: 0 var(--r-chip) var(--r-chip) 0;
+  overflow: hidden;
+}
+/* One hue for every row in both bands: these are nominal categories, and a colour per row would
+   spend the identity channel on information the bar length already carries. Square at the
+   baseline and rounded at the data end, which is the mark spec — a bar rounded at both ends
+   misreads its own zero. */
+.bar-fill {
+  display: block; height: 100%; min-width: 3px;
+  background: var(--accent); border-radius: 0 4px 4px 0;
+}
+/* Zero is the one width that must render as nothing: a floor applied to it would draw a bar
+   for a category with no members. */
+.bar-fill.w-0 { min-width: 0; }
+.bar-name { font-size: 0.75rem; text-transform: uppercase; }
+.bar-val { font-size: 0.75rem; color: var(--ink-3); text-align: right; min-width: 2.5em; }
+
+/* Bar widths as classes. A strict policy blocks the style attribute, and driving the width from
+   script would leave every bar flat without JavaScript.
+
+   Two ladders, and the fine one at the bottom is load-bearing. On the real corpus the smallest
+   protocols are 48 and 37 nodes against a 2960-node maximum — 1.6% and 1.3% — and a 5%-only
+   ladder rounded both to `w-0`, so they were rows with a count printed beside no bar at all.
+   1% of a 400 px track is 4 px: visible, and honest about being small. */
+.w-0 { width: 0%; }
+.w-1 { width: 1%; }
+.w-2 { width: 2%; }
+.w-3 { width: 3%; }
+.w-4 { width: 4%; }
+.w-5 { width: 5%; }
+.w-6 { width: 6%; }
+.w-7 { width: 7%; }
+.w-8 { width: 8%; }
+.w-9 { width: 9%; }
+.w-10 { width: 10%; }
+.w-15 { width: 15%; }
+.w-20 { width: 20%; }
+.w-25 { width: 25%; }
+.w-30 { width: 30%; }
+.w-35 { width: 35%; }
+.w-40 { width: 40%; }
+.w-45 { width: 45%; }
+.w-50 { width: 50%; }
+.w-55 { width: 55%; }
+.w-60 { width: 60%; }
+.w-65 { width: 65%; }
+.w-70 { width: 70%; }
+.w-75 { width: 75%; }
+.w-80 { width: 80%; }
+.w-85 { width: 85%; }
+.w-90 { width: 90%; }
+.w-95 { width: 95%; }
+.w-100 { width: 100%; }
+
+/* --- the legal notice --------------------------------------------------- */
+
+/* Set in a quieter register than the rest of the page and last in the document. It is reference
+   material: nobody arrives for it, and everybody who needs it needs to find it in one place
+   rather than assembled from a hero caveat and a footer line. */
+.legal { background: var(--surface-2); }
+.legal-lede {
+  margin: 0 0 20px;
+  max-width: var(--measure);
+  color: var(--ink-2);
+}
+/* Two columns where there is room. Nine statements in one column is a wall a reader skims; in
+   two, each item is a block with a heading they can land on. Same min() floor as every other
+   auto-fill grid here — a bare length is a floor even inside a narrower container, which is how
+   a 432 px track ends up inside a 350 px phone. */
+.legal-list {
+  margin: 0;
+  display: grid; gap: 18px 3rem; align-items: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(24rem, 100%), 1fr));
+}
+.legal-item { min-width: 0; }
+.legal-list dt {
+  margin: 0 0 4px;
+  font-size: 0.8125rem; font-weight: 600;
+  color: var(--ink);
+}
+.legal-list dd {
+  margin: 0;
+  font-size: 0.8125rem; line-height: 1.6;
+  color: var(--ink-2);
+}
+.legal-contact { margin: 20px 0 0; font-size: 0.8125rem; }
+/* The takedown route is the one line here somebody has to be able to act on, so it is marked
+   like a value rather than set like prose. */
+.legal-contact .mono {
+  padding: 6px 10px;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-row);
+}
+/* The notice's own limit, and it is set apart because it qualifies everything above it. A
+   disclaimer that does not say what it cannot do is the part a dispute starts at. */
+.legal-caveat {
+  margin: 20px 0 0;
+  padding-left: 12px;
+  max-width: var(--measure);
+  border-left: 2px solid var(--hairline-strong);
+  font-size: 0.75rem; line-height: 1.6;
+  color: var(--ink-3);
+}
+
+/* --- the node card ------------------------------------------------------- */
+
+/* The row's actions. Rendered as an empty cell and filled by script, so the column exists in the
+   markup and the controls exist only where they can work. Right-aligned and nowrap: this is the
+   last cell of a table that already scrolls horizontally on a phone, and a wrapping button pair
+   would make every row two lines tall. */
+.nact { text-align: right; white-space: nowrap; }
+.nrow-open, .nrow-copy {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 28px; height: 28px; padding: 0;
+  color: var(--ink-3);
+  background: transparent;
+  border: 1px solid transparent; border-radius: var(--r-row);
+  cursor: pointer;
+}
+.nrow-open:hover, .nrow-copy:hover { color: var(--ink); border-color: var(--hairline-strong); }
+.nrow-open .i, .nrow-copy .i { width: 16px; height: 16px; }
+.nrow-copy .i-check { display: none; }
+.nrow-copy[data-state="copied"] { color: var(--ok); }
+.nrow-copy[data-state="copied"] .i-copy { display: none; }
+.nrow-copy[data-state="copied"] .i-check { display: block; }
+
+/* The card itself. A native dialog, so Esc, the backdrop and the focus trap are the browser's
+   rather than three hand-rolled behaviours that get one of them wrong. */
+.nd {
+  width: min(46rem, calc(100vw - 32px));
+  max-height: min(80vh, 44rem);
+  padding: 0;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong);
+  border-radius: var(--r-card);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+  overflow: hidden;
+}
+.nd::backdrop { background: rgb(8 9 14 / 62%); }
+.nd-head {
+  position: sticky; top: 0;
+  display: flex; align-items: center; gap: 10px;
+  padding: 14px 16px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--hairline);
+}
+.nd-title { margin: 0; margin-right: auto; font-size: 0.9375rem; }
+.nd-title b { color: var(--accent); }
+.nd-reveal, .nd-copy, .nd-x {
+  display: inline-flex; align-items: center; gap: 6px;
+  min-height: 34px; padding: 0 12px;
+  font: inherit; font-size: 0.75rem; text-transform: uppercase; letter-spacing: .04em;
+  color: var(--ink);
+  background: var(--surface);
+  border: 1px solid var(--hairline-strong); border-radius: var(--r-row);
+  cursor: pointer;
+}
+.nd-x { padding: 0; width: 34px; justify-content: center; }
+.nd-reveal:hover, .nd-copy:hover, .nd-x:hover { border-color: var(--accent); }
+/* The reveal button says what it will do next, and the state lives on the dialog because that is
+   what the script toggles — one attribute, and the labels are already both in the markup. */
+.nd-reveal .lbl-done { display: none; }
+.nd[data-secret="shown"] .nd-reveal .lbl-idle { display: none; }
+.nd[data-secret="shown"] .nd-reveal .lbl-done { display: inline; }
+.nd-copy .i-check, .nd-copy .lbl-done { display: none; }
+.nd-copy[data-state="copied"] { border-color: var(--ok); color: var(--ok); }
+.nd-copy[data-state="copied"] .i-copy, .nd-copy[data-state="copied"] .lbl-idle { display: none; }
+.nd-copy[data-state="copied"] .i-check { display: block; }
+.nd-copy[data-state="copied"] .lbl-done { display: inline; }
+
+.nd-body {
+  display: grid; gap: 20px;
+  max-height: calc(min(80vh, 44rem) - 8.5rem);
+  padding: 16px;
+  overflow: auto;
+}
+/* Label and value share one pair of columns across the whole section, so the values line up
+   instead of each row sizing its own label — the same reason the catalogue's bars are a subgrid.
+   The fallback column set comes first for a browser without subgrid. */
+.nd-list {
+  margin: 0;
+  display: grid; gap: 6px 16px;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
+}
+.nd-row {
+  display: grid;
+  grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr);
+  grid-template-columns: subgrid;
+  grid-column: 1 / -1;
+}
+.nd-list dt { font-size: 0.75rem; color: var(--ink-3); }
+.nd-val {
+  margin: 0;
+  font-size: 0.8125rem; line-height: 1.5;
+  /* break-all and pre-line: a URI is one unbreakable token that must not push the card wider than
+     the window, and the stage list is the one value with real line breaks in it. */
+  word-break: break-all; white-space: pre-line;
+}
+.nd-note {
+  margin: 0;
+  padding: 12px 16px;
+  font-size: 0.75rem; line-height: 1.5;
+  color: var(--ink-3);
+  background: var(--surface-2);
+  border-top: 1px solid var(--hairline);
+}
+/* The clipboard fallback: visible enough to select, quiet enough not to look like a field the
+   reader is meant to fill in. */
+.nd-fallback {
+  display: block; width: calc(100% - 32px); margin: 0 16px 16px;
+  font: inherit; font-size: 0.75rem;
+  color: var(--ink); background: var(--surface-2);
+  border: 1px solid var(--accent); border-radius: var(--r-row);
+}
+
+@media (max-width: 700px) {
+  /* Full width on a phone, and the head stops being a row of three labelled buttons. */
+  .nd { width: 100vw; max-width: 100vw; max-height: 92vh; border-radius: 0; border: 0; }
+  .nd-reveal, .nd-copy { padding: 0 10px; }
+  .nd-list, .nd-row { grid-template-columns: 1fr; }
+  .nd-row { display: block; }
+}
+
+/* --- footer ------------------------------------------------------------- */
+
+.foot { border-top: 1px solid var(--hairline); padding: 18px 0; }
+.foot-row {
+  display: flex; align-items: baseline; flex-wrap: wrap; gap: 12px;
+  font-size: 0.75rem; color: var(--ink-3);
+}
+.foot .wordmark { font-size: 0.875rem; color: var(--ink-2); }
+.foot .mono { margin-left: auto; }
+
+/* --- narrow ------------------------------------------------------------- */
+
+@media (max-width: 700px) {
+  /* The copy column now sits over the whole band rather than beside the figure, so the scrim
+     stops being a left-to-right wash and becomes an even veil. Its floor is 62%, well past the
+     42% the copy needs. */
+  .hero::after {
+    background: linear-gradient(180deg,
+      rgba(16, 19, 28, 0.84) 0%, rgba(16, 19, 28, 0.66) 55%, rgba(16, 19, 28, 0.50) 100%);
+  }
+  /* Narrow enough that the copy sits over the art rather than beside it, so here the image
+     does cover the band and the mask comes off. Both dimensions are stated, which is what
+     retires the aspect-ratio box above rather than leaving it to be overridden by accident. */
+  .hero-art {
+    width: 100%; height: 100%; max-width: none; aspect-ratio: auto;
+    object-fit: cover; object-position: 62% 14%;
+    -webkit-mask-image: none; mask-image: none;
+  }
+  /* One column, and the copy fills it: the two-column composition above needs a band wide
+     enough for two columns, and at this width there is not one. */
+  .hero-body {
+    grid-template-columns: 1fr;
+    padding: 2.5rem 20px 2.25rem; min-height: 23rem;
+  }
+  .hero h1 { font-size: 1.875rem; }
+  .stages li { grid-template-columns: 2.2em 1fr auto; }
+  .stages .drop { grid-column: 2 / -1; }
+  .survivors .num.big { font-size: 2.5rem; }
+  /* One column, and the aside returns to being what follows the steps. */
+  .howto-cols { grid-template-columns: 1fr; }
+  .note-aside { padding-left: 0; border-left: 0; }
+  .find { margin-left: 0; width: 100%; }
+  .find input { width: 100%; max-width: none; }
+  .bar-name { font-size: 0.6875rem; }
+  /* Shorter, because the viewport is the scroll container's competitor here: a 30rem pane on a
+     640 px screen leaves almost nothing of the page around it. */
+  .tablewrap { max-height: 24rem; }
+}
+
+/* A visitor who has asked for less motion gets none, including the control transitions above.
+   The declaration is unconditional because there is no case where a hover fade is worth
+   overriding that preference. */
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+
+/* There is no @keyframes rule in this file and no animation of content, and that is the intent:
+   a measured number is rendered once. Glitching a latency figure would be lying about the
+   instrument. The only movement anywhere is the control hover fade above — one duration, one
+   curve, both from the reference — and it is off for prefers-reduced-motion. */
+
+/* A filtered-out row is hidden with the hidden attribute; a table row needs the rule said
+   out loud, because the UA display:table-row would otherwise fight it. */
+.ntab tr[hidden] { display: none; }
+/* The card's rows and sections are hidden the same way, and .nd-row sets display: grid, which
+   outranks the UA [hidden] rule: without this every empty field showed its label beside nothing. */
+.nd-row[hidden], .nd-sec[hidden] { display: none; }

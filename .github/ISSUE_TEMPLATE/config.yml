@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔥 Hot Issues
+    url: https://github.com/TuftyTech/ShellShift/issues?q=is%3Aissue%20state%3Aopen%20sort%3Areactions-%2B1-desc
+    about: the most 👍'd open issues, yours might be sitting right there. a 👍 counts more than a new issue
+  - name: 📡 Live Dashboard
+    url: https://tuftytech.github.io/ShellShift
+    about: freshness, funnel and every proven node of the latest run. check here first if a subscription looks empty
+  - name: 🔒 Report a Vulnerability
+    url: https://github.com/TuftyTech/ShellShift/security/advisories/new
+    about: security problems go here privately, never into a public issue

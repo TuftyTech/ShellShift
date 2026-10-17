@@ -1,0 +1,9 @@
+{
+  "sources": [],
+  "site_url": "https://tuftytech.github.io/ShellShift",
+  "run_budget": "6m",
+  "concurrency": 1024,
+  "proof_concurrency": 128,
+  "geoip": true,
+  "measure_throughput": false
+}

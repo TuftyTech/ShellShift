@@ -1,0 +1,121 @@
+<!doctype html>
+<!-- data-lang is the language the document is currently showing; lang is kept in step with it
+     by the script. Both languages are in the markup and CSS hides the one that is not current,
+     so the largest paint never waits on script execution. -->
+<html lang="{{.Lang}}" data-lang="{{.Lang}}" data-build-time="{{.BuildTime.UTC.Format "2006-01-02T15:04:05Z"}}"
+      data-payload="{{.AssetBase}}network.json">
+<head>
+<meta charset="utf-8">
+<!-- No maximum-scale and no user-scalable=no: disabling pinch zoom is a WCAG 1.4.4
+     failure, and the predecessor shipped it on a page whose smallest real text was 10px. -->
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- GitHub Pages cannot set HTTP headers, so the policy goes here. This form cannot
+     express frame-ancestors; that limitation is recorded as open question OQ-04. -->
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+<meta name="referrer" content="no-referrer">
+<title>{{t "title"}}</title>
+<meta name="description" content="{{t "tagline"}}">
+<!-- An inline mark rather than a file: it removes a request, cannot 404, and is themeable.
+     img-src permits data: for exactly this. -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 16 16%27%3E%3Crect width=%2716%27 height=%2716%27 fill=%27%23191C2B%27/%3E%3Cpath d=%27M3 4h10M3 8h7M3 12h4%27 stroke=%27%235D53B1%27 stroke-width=%272%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="{{.AssetBase}}assets/site.css">
+</head>
+<body>
+<a class="skip" href="#main">{{template "s" (tt "skip")}}</a>
+<header class="bar">
+  <span class="brand">
+    <b class="wordmark">SHELLSHIFT</b>
+    <!-- The reference puts a line of Japanese here. The house style forbids CJK as
+         decoration, so this says the same thing the project actually claims. -->
+    <span class="brandsub">{{template "s" (tt "wordmark_tagline")}}</span>
+  </span>
+  <nav class="bar-tools" aria-label="{{t "language"}}" data-alt-aria-label="{{alt "language"}}">
+    <!-- Both languages are shown and the current one is marked, rather than a single link
+         naming the other. A visitor who cannot read the language a page is in has to be able
+         to see that the other one exists at all.
+
+         Both halves are real links to prerendered pages, so switching works with JavaScript
+         off; with it, the script intercepts the click and swaps one attribute instead, which
+         keeps the scroll position. Both are links rather than one link and one span because
+         after a script-side switch either half has to be operable from the keyboard.
+
+         No lang attribute on these: they are language-neutral tokens, and one here would be
+         hidden by the very rule that hides the other language. -->
+    <span class="langswitch" role="group">
+      <a href="{{if eq .Lang "ru"}}./{{else}}../{{end}}" hreflang="ru" data-lang-to="ru"
+         data-testid="lang-toggle"{{if eq .Lang "ru"}} aria-current="page"{{end}}>RU</a>
+      <a href="{{if eq .Lang "ru"}}en/{{else}}./{{end}}" hreflang="en" data-lang-to="en"
+         data-testid="lang-toggle"{{if eq .Lang "en"}} aria-current="page"{{end}}>EN</a>
+    </span>
+    <!-- The icon is decorative and the aria-label carries the name: an icon is never the
+         accessible name of a control. -->
+    <button class="themebtn" type="button" data-testid="theme-toggle"
+            aria-label="{{t "theme"}}" data-alt-aria-label="{{alt "theme"}}">{{icon "contrast" "i"}}</button>
+    <!-- No help link in the bar. The hero's second call to action already routes to
+         #howto, and the bar is what a reader scans for the language and the theme; a third
+         link there competes with the two controls that exist nowhere else. -->
+    {{if .SourcesURL}}
+    <a class="barlink" href="{{.SourcesURL}}" rel="noopener noreferrer">{{template "s" (tt "nav_sources")}}{{icon "open_in_new" "i"}}</a>
+    {{end}}
+  </nav>
+</header>
+
+<!-- The status readout: machine chrome carrying real values, not a slogan.
+
+     Every band ships in the markup and CSS shows the one `data-freshness` names, so the script
+     can move the page from "fresh" to "stale" by setting one attribute — and a visitor with the
+     script blocked still sees the band the run was rendered with. It used to render one band and
+     one baked age, which meant a page generated at 04:38 said "0.0ч назад · свежие данные"
+     forever: the indicator whose entire purpose is to say "the pipeline may have stopped" was
+     the one element on the page that could never say it. The timestamp beside it was correct the
+     whole time, which is what makes the pair unreadable rather than merely stale.
+
+     The unit is bilingual for the same reason every other string is: rendered with `t` it stayed
+     "ч назад" after a switch to English. -->
+<div class="readout" data-testid="heartbeat" data-freshness="{{.Freshness}}"
+     data-verified-at="{{.GeneratedAt.UTC.Format "2006-01-02T15:04:05Z"}}"
+     data-live-hours="{{freshnessEdge "live"}}" data-aging-hours="{{freshnessEdge "aging"}}">
+  <span class="dot" aria-hidden="true"></span>
+  <!-- The date, without a clock. A clock beside a relative age is the same fact twice at two
+       precisions, and the actionable one is the age; the exact instant stays in data-verified-at,
+       which is what the script reads. -->
+  <span class="mono" data-testid="heartbeat-absolute">{{.GeneratedAt.UTC.Format "2006-01-02"}}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span class="mono" data-testid="heartbeat-relative"><span
+      data-testid="heartbeat-age">{{round1 .AgeHours}}</span>{{template "s" (tt "ago_hours")}}</span>
+  <span class="sep" aria-hidden="true">·</span>
+  <span data-testid="heartbeat-band">{{range $b := freshnessBands}}<span
+      data-band="{{$b}}">{{template "s" (tt (printf "freshness_%s" $b))}}</span>{{end}}</span>
+  <span class="grow" aria-hidden="true"></span>
+  <span class="mono muted">{{.Engine}}</span>
+</div>
+
+<main id="main">
+  {{template "hero.html" .}}
+  {{template "truth.html" .}}
+
+  {{if .Funnel.BudgetExhausted}}
+  <div class="wrap"><p class="warn" data-testid="budget-warning">{{template "s" (tt "budget_warning")}}</p></div>
+  {{end}}
+
+  <!-- Order is claim, caveat, proof, what you take away, how, composition, inventory.
+       The funnel used to sit after the node table, which put the signature element and the one
+       number the project is about at y=37 589 of a 38 541 px document: past 695 table rows,
+       where no visitor arrives. It is proof, so it comes before the thing it justifies. -->
+  {{template "funnel.html" .}}
+  {{template "endpoints.html" .}}
+  {{template "howto.html" .}}
+  {{template "mix.html" .}}
+  {{template "nodes.html" .}}
+  {{template "legal.html" .}}
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <b class="wordmark">SHELLSHIFT</b>
+    <span class="mono muted">{{t "run_took"}} {{round1 .RunSeconds}}{{t "seconds"}}</span>
+  </div>
+</footer>
+<script src="{{.AssetBase}}assets/site.js" defer></script>
+</body>
+</html>

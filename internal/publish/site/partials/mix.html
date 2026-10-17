@@ -1,0 +1,45 @@
+{{define "mix.html"}}
+{{if .Mix}}
+<section class="mix" id="mix" aria-labelledby="mix-h">
+  <div class="wrap">
+    <h2 id="mix-h" class="label">{{template "s" (tt "mix")}}</h2>
+    <!-- Two distributions of one corpus, drawn by one mark and sharing one scale rule: each
+         band is normalised to its own largest row, because protocols and countries are not
+         comparable quantities and a shared axis would invite the comparison.
+
+         Protocols used to be a 695-row, seven-column table taking 92% of the document, with
+         the funnel and this band stranded below it where nobody reached them. The inventory
+         still exists, further down and bounded; what belongs in a summary is the shape of the
+         catalogue, and that is a bar per protocol.
+
+         Both the label and the count sit on every row, which is why there is no hover layer
+         here: a tooltip would restate what is already visible. -->
+    <div class="mixgrid">
+      {{range .Mix}}
+      <div class="mixband">
+        <h3 class="sublabel">{{template "s" (tt .Key)}}<!--
+          The count is the corpus total, and it reads "8/14" when the band is capped: a
+          heading that counted its own bars would report eight countries in a catalogue that
+          has fourteen, which is the shape of statistic this page exists to not publish.
+       --><span class="mono">{{if lt (len .Rows) .Total}}{{len .Rows}}/{{end}}{{.Total}}</span></h3>
+        <ol class="bars" data-testid="{{.TestID}}">
+          {{$max := .Max}}
+          {{range .Rows}}
+          <li data-k="{{.Label}}">
+            <span class="bar-name mono">{{.Label}}</span>
+            <!-- The width is a class, not a style attribute. A strict policy blocks inline
+                 styles, and setting the width from script would leave every bar at zero for a
+                 visitor with JavaScript disabled. Five-percent steps are visually
+                 indistinguishable on a bar. -->
+            <span class="bar-track"><span class="bar-fill {{widthClass .Count $max}}"></span></span>
+            <span class="bar-val mono">{{.Count}}</span>
+          </li>
+          {{end}}
+        </ol>
+      </div>
+      {{end}}
+    </div>
+  </div>
+</section>
+{{end}}
+{{end}}

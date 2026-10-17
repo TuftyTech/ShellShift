@@ -1,0 +1,139 @@
+{{define "nodes.html"}}
+<section class="nodes" id="nodes" aria-labelledby="nodes-h">
+  <div class="wrap">
+    <h2 id="nodes-h" class="label">{{template "s" (tt "inventory")}}</h2>
+    {{if .Rows}}
+    <!-- The tool row arrives hidden and the script reveals it. Filtering and searching cannot
+         work without JavaScript, and a control that silently does nothing is worse than no
+         control: the rows below are all present either way. -->
+    <div class="tools" data-testid="node-tools" hidden>
+      <div class="chips" role="group" aria-label="{{t "filter"}}" data-alt-aria-label="{{alt "filter"}}">
+        <button type="button" class="chip-btn" data-filter="" aria-pressed="true">{{template "s" (tt "filter_all")}}</button>
+        {{range .Filters}}
+        <button type="button" class="chip-btn" data-filter="{{.}}" aria-pressed="false">{{.}}</button>
+        {{end}}
+      </div>
+      <label class="find">
+        {{icon "search" "i"}}
+        <input type="search" data-testid="node-search" autocomplete="off" spellcheck="false"
+               placeholder="{{t "search"}}" data-alt-placeholder="{{alt "search"}}"
+               aria-label="{{t "search"}}" data-alt-aria-label="{{alt "search"}}">
+      </label>
+      <p class="tally mono">{{template "s" (tt "shown")}}
+        <b data-testid="node-shown">{{len .Rows}}</b>/<span>{{len .Rows}}</span></p>
+    </div>
+    <!-- The pane scrolls; the section does not grow with the corpus. At 695 proven nodes the
+         full-height table was 35 627 px of a 38 541 px document — 92% — and it pushed the
+         funnel and the catalogue mix past y=37 000, where the two things that justify the page
+         were unreachable. Every row is still in the document, so the filter and the search
+         still run over the whole catalogue and the table is complete with the script blocked.
+         tabindex makes the scroll reachable from the keyboard, which is the part of this
+         pattern that usually gets left out. -->
+    <div class="tablewrap" tabindex="0" role="region" aria-labelledby="nodes-h">
+      <table class="ntab">
+        <thead>
+          <tr>
+            <th scope="col">{{template "s" (tt "col_protocol")}}</th>
+            <th scope="col">{{template "s" (tt "col_country")}}</th>
+            <th scope="col">{{template "s" (tt "col_trans")}}</th>
+            <th scope="col">{{t "col_id"}}</th>
+            <th scope="col">{{template "s" (tt "col_latency")}}</th>
+            <th scope="col">{{template "s" (tt "col_streak")}}</th>
+            <th scope="col">{{template "s" (tt "col_verified")}}</th>
+            <!-- The actions column. The cell is rendered empty and the script fills it: the card
+                 and the clipboard both need the payload, so a button in the markup would be a
+                 control that does nothing until a fetch lands, or forever if it is blocked. -->
+            <th scope="col"><span class="sr-only">{{t "detail_open"}}</span></th>
+          </tr>
+        </thead>
+        <!-- One line per row, and the markup is as short as it can be while staying readable:
+             the row is the only thing on this page whose byte cost is multiplied by the size
+             of the corpus, and TestNodeRowStaysCheap holds it to a ceiling.
+
+             There is no address column and no port column. publish.NodeRow does not carry
+             them by construction (GHOST-048): the page exists to show that verification
+             happened, not to republish somebody else's nodes in a second, more permanent
+             form. There is no status column either — everything here is proven, so a column
+             that always says the same thing is the predecessor's hardcoded "active" badge. -->
+        <tbody data-testid="node-rows">
+{{range .Rows}}<tr data-p="{{.Protocol}}"{{if .Node}} data-node="{{.Node}}"{{end}}><td><b class="chip">{{.Protocol}}</b></td><td>{{.CC}}</td><td>{{.Transport}}{{if .Masked}} <i class="wl">WL</i>{{end}}</td><td>{{.ID}}</td><td>{{.Latency}}{{if .Mbps}}<span class="mbps">{{.Mbps}}</span>{{end}}</td><td>{{.Streak}}</td><td>{{.Verified}}</td><td class="nact"></td></tr>
+{{end}}        </tbody>
+      </table>
+    </div>
+    <p class="empty" data-testid="node-nomatch" hidden>{{template "s" (tt "no_match")}}</p>
+    <!-- The legend describes the table it sits under, and only that. Rendered unconditionally it
+         explained a WL marker and a second line in the latency column in a run that had neither
+         — no whitelisted node and no throughput measurement — so the one paragraph on the page
+         whose job is to decode the markup was pointing at markup that was not there. -->
+    {{if or .HasMasked .HasMbps}}
+    <p class="note" data-testid="node-legend">
+      {{if .HasMasked}}WL — {{template "s" (tt "masked")}}.{{end}}
+      {{if .HasMbps}}{{template "s" (tt "mbps_note")}}{{end}}
+    </p>
+    {{end}}
+    <!-- The card, and the labels it is built from.
+
+         Values are not here: the detail lives in network.json and the script fetches it once,
+         because rendering a card per row would be ~1.8 MB of markup for a corpus this size and
+         would put every node's credential into an indexable page. The labels are here, in both
+         languages, because that is how every other string on this page reaches a reader — a card
+         assembled from strings baked into site.js would be the one part of the interface that
+         could not be translated and could not be tested from Go.
+
+         The dialog is native. Focus trapping, Esc and the backdrop come with it, and the three of
+         them hand-rolled are how a modal ends up unusable from a keyboard. -->
+    <dialog class="nd" data-testid="node-detail" aria-labelledby="nd-h">
+      <div class="nd-head">
+        <h3 id="nd-h" class="nd-title">
+          {{template "s" (tt "detail_title")}} <b class="mono" data-nd="id"></b>
+        </h3>
+        <button type="button" class="nd-reveal" data-nd="reveal">
+          <span class="lbl lbl-idle">{{template "s" (tt "detail_reveal")}}</span>
+          <span class="lbl lbl-done">{{template "s" (tt "detail_hide")}}</span>
+        </button>
+        <button type="button" class="nd-copy" data-nd="copy">
+          {{icon "content_copy" "i i-copy"}}
+          {{icon "check" "i i-check"}}
+          <span class="lbl lbl-idle">{{template "s" (tt "detail_copy")}}</span>
+          <span class="lbl lbl-done">{{template "s" (tt "copied")}}</span>
+        </button>
+        <button type="button" class="nd-x" data-nd="close"
+                aria-label="{{t "detail_close"}}" data-alt-aria-label="{{alt "detail_close"}}">
+          {{icon "close" "i"}}
+        </button>
+      </div>
+      <div class="nd-body" data-nd="body"></div>
+      <p class="nd-note">{{template "s" (tt "detail_secret_note")}}</p>
+    </dialog>
+    <template data-testid="node-detail-tpl">
+      {{range detailSections}}
+      <section class="nd-sec" data-section="{{.Key}}">
+        <h4 class="label">{{template "s" (tt .Key)}}</h4>
+        <dl class="nd-list">
+          {{range .Fields}}
+          <div class="nd-row" data-field="{{.}}" hidden>
+            <dt>{{template "s" (tt (printf "detail_%s" .))}}</dt>
+            <dd class="nd-val mono"></dd>
+          </div>
+          {{end}}
+        </dl>
+      </section>
+      {{end}}
+    </template>
+    <template data-testid="node-actions-tpl">
+      <button type="button" class="nrow-open" data-node-open
+              aria-label="{{t "detail_open"}}" data-alt-aria-label="{{alt "detail_open"}}">
+        {{icon "info" "i"}}
+      </button>
+      <button type="button" class="nrow-copy" data-node-copy
+              aria-label="{{t "copy"}}" data-alt-aria-label="{{alt "copy"}}">
+        {{icon "content_copy" "i i-copy"}}
+        {{icon "check" "i i-check"}}
+      </button>
+    </template>
+    {{else}}
+    <p class="empty" data-testid="nodes-empty">{{template "s" (tt "empty")}}</p>
+    {{end}}
+  </div>
+</section>
+{{end}}

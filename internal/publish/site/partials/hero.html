@@ -1,0 +1,31 @@
+{{define "hero.html"}}
+<section class="hero" data-testid="hero">
+  <!-- A real img rather than a background-image: a background cannot be given intrinsic
+       dimensions, and without them the whole page shifts when the largest asset lands.
+       alt is empty on purpose — the illustration carries nothing the text does not, and
+       describing it would add noise to a screen reader rather than information. -->
+  <img class="hero-art" src="{{.AssetBase}}assets/hero.webp" width="900" height="1350"
+       alt="" loading="eager" decoding="async" fetchpriority="high">
+  <div class="wrap hero-body">
+    <!-- One column of copy with a stated measure, not a paragraph left at the edge of a
+         62rem band. The band is a two-column composition: this is column one and the
+         illustration is column two, so the space between them is the composition rather
+         than what was left over.
+
+         Nothing here restates a number. The band used to carry four stat tiles — proven,
+         countries, protocols, yield — and every one of them is said again further down:
+         proven and yield are the funnel's last row, countries and protocols are the length
+         of a band in the catalogue mix. A figure repeated in two places is a figure that
+         can disagree with itself. The timestamp went the same way: the readout strip
+         directly above this band already carries it, with the age and the freshness. -->
+    <div class="hero-copy">
+      <h1>{{template "s" (tt "h1")}}</h1>
+      <p class="lede">{{template "s" (tt "hero_lede")}}</p>
+      <p class="cta">
+        <a class="btn btn-1" href="#subs">{{template "s" (tt "cta_subs")}}</a>
+        <a class="btn btn-2" href="#howto">{{template "s" (tt "cta_how")}}</a>
+      </p>
+    </div>
+  </div>
+</section>
+{{end}}

@@ -1,0 +1,30 @@
+{{define "legal.html"}}
+<!-- Last section on the page, and last on purpose: it is the thing a reader consults rather than
+     the thing that gets them here. The predecessor buried the same class of statement in a footer
+     behind a FAQ, which is how a page ends up making claims nothing on it qualifies.
+
+     Every item is a fact about how this project is built, not a promise about the reader's legal
+     position — the closing paragraph says so in as many words. A disclaimer that overstates what
+     it can do is worth less than one that states its own limit, because the first thing anybody
+     disputing it will do is read it. -->
+<section class="legal" id="legal" aria-labelledby="legal-h">
+  <div class="wrap">
+    <h2 id="legal-h" class="label">{{template "s" (tt "legal")}}</h2>
+    <p class="legal-lede">{{template "s" (tt "legal_lede")}}</p>
+    <!-- A description list, not a numbered one: these are independent statements and a number
+         beside each would imply an order of precedence that does not exist. -->
+    <dl class="legal-list" data-testid="legal-list">
+      {{range legalItems}}
+      <div class="legal-item">
+        <dt>{{template "s" (tt .)}}</dt>
+        <dd>{{template "s" (tt (printf "%s_body" .))}}</dd>
+      </div>
+      {{end}}
+    </dl>
+    <p class="legal-contact">
+      <span class="mono" data-testid="legal-takedown-url">{{legalContactURL}}</span>
+    </p>
+    <p class="legal-caveat" data-testid="legal-not-advice">{{template "s" (tt "legal_not_advice")}}</p>
+  </div>
+</section>
+{{end}}

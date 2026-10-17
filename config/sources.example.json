@@ -1,0 +1,12 @@
+{
+  "whitelist_domains": [
+    "https://raw.githubusercontent.com/example/whitelist/main/domains.txt"
+  ],
+  "whitelist_networks": [
+    "https://raw.githubusercontent.com/example/whitelist/main/cidr.txt"
+  ],
+  "site_url": "https://tuftytech.github.io/ShellShift",
+  "run_budget": "8m",
+  "geoip": true,
+  "measure_throughput": true
+}

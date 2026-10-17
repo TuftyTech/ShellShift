@@ -1,0 +1,55 @@
+{{define "endpoints.html"}}
+<section class="endpoints" id="subs" aria-labelledby="ep-h">
+  <div class="wrap">
+    <h2 id="ep-h" class="label">{{template "s" (tt "subscriptions")}}</h2>
+    {{if eq .Funnel.Proven 0}}
+      <p class="empty" data-testid="endpoints-empty">{{template "s" (tt "empty")}}</p>
+    {{else}}
+    <ul class="ep-list">
+      {{range .Bundles}}
+      <li class="ep{{if eq .Count 0}} ep-empty{{end}}" data-testid="endpoint-card"
+          data-endpoint="{{.Name}}" data-count="{{.Count}}">
+        <!-- The action sits on the same line as the name it applies to. Below the URL field
+             and right-aligned, it left a 130x44 void in every card, eight times over.
+
+             A list with nothing in it must not offer a subscription: a visitor who copies it
+             gets an empty file and blames the configurations.
+
+             Both icons and both labels ship inside the button, and the confirmed state is a
+             CSS swap. The script never assigns to the button's textContent — doing that
+             deletes every child it has, the icon included — and it never rewrites a label
+             either, which is what keeps the confirmation correct in both languages. -->
+        <div class="ep-head">
+          <span class="ep-title">{{.Title}}</span>
+          <span class="ep-count mono" data-testid="endpoint-count">{{.Count}} {{template "s" (nodeWords .Count)}}</span>
+          <button class="ep-copy" type="button" data-testid="endpoint-copy"
+                  data-url="{{$.Origin}}/{{.Name}}"
+                  {{if eq .Count 0}}disabled aria-disabled="true"{{end}}>
+            {{icon "content_copy" "i i-copy"}}
+            {{icon "check" "i i-check"}}
+            <span class="lbl lbl-idle" data-testid="endpoint-copy-label">{{template "s" (tt "copy")}}</span>
+            <span class="lbl lbl-done" data-testid="endpoint-copy-done">{{template "s" (tt "copied")}}</span>
+          </button>
+        </div>
+        <!-- The URL is visible text, not a value hidden behind a button, and it keeps the whole
+             width of the card. When the clipboard is unavailable the fallback is selecting this
+             field — the predecessor opened a window.prompt — and a field clipped to share a row
+             with the button cannot be that fallback. -->
+        <input class="ep-url mono" data-testid="endpoint-url" readonly
+               value="{{$.Origin}}/{{.Name}}" aria-label="{{.Title}}">
+        <!-- What the file contains, and — when it contains nothing — why. A card reading
+             "whitelisted · 0 nodes" with no more than that is the same number whether no node
+             qualified or the whitelist feed never loaded, and those are opposite facts. -->
+        {{if .Note}}
+        <p class="ep-note" data-testid="endpoint-note">{{template "s" (tt .Note)}}</p>
+        {{end}}
+        {{if and (eq .Count 0) (eq .Name "sub_wl.txt") $.ClassNote}}
+        <p class="ep-why" data-testid="endpoint-why">{{template "s" (tt $.ClassNote)}}</p>
+        {{end}}
+      </li>
+      {{end}}
+    </ul>
+    {{end}}
+  </div>
+</section>
+{{end}}

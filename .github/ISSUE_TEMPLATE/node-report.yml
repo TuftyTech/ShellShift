@@ -1,0 +1,52 @@
+name: 🛰️ Node Report
+description: you operate a published node, think one is malicious, or hold rights to something listed
+labels:
+  - node-report
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ShellShift only republishes what open feeds already carry, and it does not operate any of the nodes.
+        well-founded requests are acted on, usually by the next scheduled run
+
+        please do **not** paste the node's credential (uuid, password, key). the ID from the dashboard is enough to find it
+  - type: dropdown
+    id: reason
+    attributes:
+      label: what's the matter
+      options:
+        - i operate this node and want it removed
+        - the node looks malicious
+        - rights holder request
+        - a feed shouldn't be collected from
+        - other
+    validations:
+      required: true
+  - type: input
+    id: node_id
+    attributes:
+      label: node ID
+      description: the short ID from the dashboard's node table (it is a hash, not a credential)
+      placeholder: 3f9c1a2b
+  - type: dropdown
+    id: bundle
+    attributes:
+      label: seen in
+      multiple: true
+      options:
+        - sub_all.txt
+        - sub_wl.txt
+        - sub_vless.txt
+        - sub_vmess.txt
+        - sub_trojan.txt
+        - sub_ss.txt
+        - sub_hy2.txt
+        - the dashboard only
+  - type: textarea
+    id: details
+    attributes:
+      label: details
+      description: what you observed, and how we can verify that you operate the node or hold the rights, if that applies
+    validations:
+      required: true

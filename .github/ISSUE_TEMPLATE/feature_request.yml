@@ -1,0 +1,55 @@
+name: 💡 Feature Request
+description: got an idea? spill it
+labels:
+  - enhancement
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ooh an idea 👀 tell us everything
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: before we start
+      options:
+        - label: i searched the [existing issues](https://github.com/TuftyTech/ShellShift/issues?q=is%3Aissue) (closed ones too), nobody asked for this yet
+          required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: what's bugging you
+      description: the problem behind the idea, if there is one
+      placeholder: i'm always frustrated when ...
+  - type: textarea
+    id: idea
+    attributes:
+      label: your idea
+      description: what should ShellShift do? mockups & sketches are very welcome
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: where in the project
+      options:
+        - a new protocol / transport / cipher
+        - verification & proof
+        - classification & whitelists
+        - subscriptions & output formats
+        - dashboard
+        - workflows & deployment
+        - other / not sure
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: other ways you thought of
+  - type: textarea
+    id: other_projects
+    attributes:
+      label: projects that do this well
+      description: links or screenshots of how others did it
+  - type: textarea
+    id: extra
+    attributes:
+      label: anything else

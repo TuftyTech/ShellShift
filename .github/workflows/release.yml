@@ -1,0 +1,85 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: existing tag to build (or rebuild) a release for, e.g. v1.0.0
+        required: true
+
+permissions: {}
+
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+env:
+  GOFLAGS: -mod=readonly
+  # INV-49: without this tag every Reality node fails to construct and is silently dropped.
+  # A release built without it would look healthy and lose most of the catalogue.
+  BUILD_TAGS: with_utls
+  CGO_ENABLED: '0'
+  TAG: ${{ inputs.tag || github.ref_name }}
+
+jobs:
+  release:
+    name: build and release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ inputs.tag || github.ref }}
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7
+        with:
+          go-version-file: go.mod
+          check-latest: false
+
+      # A tag on a red commit must not ship, so the suite gates the release the way it gates main.
+      - name: go test
+        run: go test -tags "$BUILD_TAGS" -count=1 ./...
+
+      # Archive names carry no version, so releases/latest/download/<name> in the README keeps
+      # pointing at the newest build without being edited on every release.
+      - name: build archives
+        run: |
+          set -eu
+          mkdir -p out stage
+          for target in linux/amd64 linux/arm64 darwin/amd64 darwin/arm64 windows/amd64 windows/arm64; do
+            os=${target%/*}
+            arch=${target#*/}
+            name="shellshift_${os}_${arch}"
+            ext=""
+            [ "$os" = windows ] && ext=".exe"
+            mkdir -p "stage/$name/config"
+            GOOS=$os GOARCH=$arch go build -trimpath -tags "$BUILD_TAGS" \
+              -ldflags "-s -w -X main.version=$TAG" \
+              -o "stage/$name/shellshift$ext" ./cmd/shellshift
+            cp LICENSE README.md README.ru.md "stage/$name/"
+            cp config/sources.example.json config/run.json "stage/$name/config/"
+            if [ "$os" = windows ]; then
+              (cd stage && zip -qr "../out/$name.zip" "$name")
+            else
+              tar -C stage -czf "out/$name.tar.gz" "$name"
+            fi
+          done
+          (cd out && sha256sum -- * > SHA256SUMS.txt)
+          cat out/SHA256SUMS.txt
+
+      - name: publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: |
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" out/* --clobber
+          else
+            gh release create "$TAG" out/* \
+              --title "ShellShift $TAG" \
+              --notes-file .github/release-notes.md \
+              --verify-tag
+          fi

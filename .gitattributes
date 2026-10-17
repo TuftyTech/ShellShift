@@ -1,0 +1,15 @@
+# Нормализация переводов строк. Без этого Git на Windows положит в рабочее дерево
+# CRLF, и tools/hygiene.sh на ubuntu-раннере упадёт с "bad interpreter".
+* text=auto eol=lf
+*.sh   text eol=lf
+*.go   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+
+# Растровые ассеты — байт-в-байт. Без этого `* text=auto` на Windows пропустит
+# webp через нормализацию переводов строк и отдаст на раннер битый файл.
+*.webp binary
+*.png  binary
+*.avif binary
+*.jpg  binary

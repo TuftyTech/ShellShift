@@ -1,0 +1,14 @@
+{{define "truth.html"}}
+<!-- Directly under the hero and expanded by default. In the predecessor this copy existed and
+     was good, but it sat in a footer behind a FAQ while a hardcoded "active" badge occupied the
+     hero. Moving it down the page would repeat exactly that. -->
+<section class="truth" data-testid="truth-panel" aria-labelledby="truth-h">
+  <div class="wrap truth-row">
+    {{icon "info" "i i-note"}}
+    <div>
+      <h2 id="truth-h" class="label">{{template "s" (tt "not_a_vpn")}}</h2>
+      <p data-testid="truth-is-not">{{template "s" (tt "not_a_vpn_body")}}</p>
+    </div>
+  </div>
+</section>
+{{end}}

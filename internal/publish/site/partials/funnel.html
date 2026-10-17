@@ -1,0 +1,50 @@
+{{define "funnel.html"}}
+<!-- The signature element: the pipeline rendered honestly, including what was discarded.
+     Corner brackets appear here and nowhere else on the page; a motif on every panel is
+     wallpaper. -->
+<section class="funnel" id="proof" data-testid="funnel" aria-labelledby="funnel-h">
+  <div class="wrap">
+    <h2 id="funnel-h" class="label">{{template "s" (tt "what_we_check")}}</h2>
+    <div class="bracketed">
+    <ol class="stages">
+      {{$total := .Funnel.Collected}}
+      <li data-testid="funnel-stage" data-stage="collected" data-value="{{.Funnel.Collected}}">
+        <span class="idx">01</span><span class="stage-name">{{template "s" (tt "funnel_collected")}}</span>
+        <b class="num">{{comma .Funnel.Collected}}</b>
+      </li>
+      <li data-testid="funnel-stage" data-stage="decoded" data-value="{{.Funnel.Decoded}}">
+        <span class="idx">02</span><span class="stage-name">{{template "s" (tt "funnel_decoded")}}</span>
+        <b class="num">{{comma .Funnel.Decoded}}</b>
+        <span class="drop mono">−{{comma (sub .Funnel.Collected .Funnel.Decoded)}}</span>
+      </li>
+      <!-- A popular node arrives from several feeds at once, so the drop here is real work
+           removed, not a rounding artefact. It is shown because a funnel that jumps from
+           decoded straight to policy attributes that drop to nothing (INV-40). -->
+      <li data-testid="funnel-stage" data-stage="candidates" data-value="{{.Funnel.Candidates}}">
+        <span class="idx">03</span><span class="stage-name">{{template "s" (tt "funnel_candidates")}}</span>
+        <b class="num">{{comma .Funnel.Candidates}}</b>
+        {{if gt .Funnel.Duplicates 0}}
+        <span class="drop mono">−{{comma .Funnel.Duplicates}}</span>
+        {{end}}
+      </li>
+      <li data-testid="funnel-stage" data-stage="policy" data-value="{{.Funnel.Policy}}">
+        <span class="idx">04</span><span class="stage-name">{{template "s" (tt "funnel_policy")}}</span>
+        <b class="num">{{comma .Funnel.Policy}}</b>
+      </li>
+      <li data-testid="funnel-stage" data-stage="reached" data-value="{{.Funnel.Reached}}">
+        <span class="idx">05</span><span class="stage-name">{{template "s" (tt "funnel_reached")}}</span>
+        <b class="num">{{comma .Funnel.Reached}}</b>
+      </li>
+      <!-- The one hero figure on the page. Everything in the hero band above is a stat tile,
+           deliberately smaller: a view gets exactly one number this size. -->
+      <li class="survivors" data-testid="funnel-stage" data-stage="proven" data-value="{{.Funnel.Proven}}">
+        <span class="idx">06</span><span class="stage-name">{{template "s" (tt "funnel_proven")}}</span>
+        <b class="num big">{{comma .Funnel.Proven}}</b>
+        <span class="drop mono">{{pct .Funnel.Proven $total}}%</span>
+      </li>
+    </ol>
+    </div>
+    <p class="note" data-testid="funnel-method">{{template "s" (tt "funnel_note")}}</p>
+  </div>
+</section>
+{{end}}

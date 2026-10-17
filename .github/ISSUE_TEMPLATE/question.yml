@@ -1,0 +1,31 @@
+name: ❓ Question
+description: i got a smol question / is it only me or..
+labels:
+  - question
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        the [README](https://github.com/TuftyTech/ShellShift#readme) might have it already, if not ask away 🤍
+  - type: textarea
+    id: question
+    attributes:
+      label: what is it
+    validations:
+      required: true
+  - type: dropdown
+    id: about
+    attributes:
+      label: it's about
+      options:
+        - connecting a client to a subscription
+        - running ShellShift myself
+        - how verification works
+        - something on the dashboard
+        - other
+  - type: textarea
+    id: media
+    attributes:
+      label: screenshots / logs
+      description: if it helps explain. no real credentials please
