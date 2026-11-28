@@ -1,0 +1,8 @@
+#profile-title: ShellShift — trojan
+#profile-update-interval: 2
+trojan://d9d02f3e-c877-4a1f-990e-f2418777f745@94.130.237.57:27154?host=94.130.237.57&path=%2FTelegram%3D%40AmyraxVPN&security=none&type=ws#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%C2%B7%20Falkenstein%20%C2%B7%200dc36a58
+trojan://sshs8_6481354771@86.38.247.109:2087?fp=chrome&host=%3Ftelegram---planb_net---planb_net---planb_net---planb_net&security=tls&sni=ul-singapore1.09vpn.com&type=tcp#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%20%C2%B7%209c21f3ea
+trojan://sshs8_6481354771@86.38.247.109:2087?fp=chrome&security=tls&sni=ul-singapore1.09vpn.com&type=tcp#%F0%9F%87%B8%F0%9F%87%AC%20Singapore%20%C2%B7%20705e2451
+trojan://d9d02f3e-c877-4a1f-990e-f2418777f745@94.130.237.57:27154?host=94.130.237.57&path=%2FTelegram%3D%40AmyraxVPN&security=none&type=httpupgrade#%F0%9F%87%A9%F0%9F%87%AA%20Germany%20%C2%B7%20Falkenstein%20%C2%B7%2025f5d8df
+trojan://123456@us.ctt25.uk:443?fp=chrome&security=tls&sni=us.ctt25.uk&type=tcp#%F0%9F%87%BA%F0%9F%87%B8%20United%20States%20%C2%B7%20Council%20Bluffs%20%C2%B7%208971bf43
+trojan://963A4918-A630-29DA-A873-093CDF8AD784@172.67.199.12:443?alpn=http/1.1&fp=chrome&host=lingering-fire-1fe9.vpnetwork3567.workers.dev&path=%2F&security=tls&sni=lingering-fire-1fe9.vpnetwork3567.workers.dev&type=ws#%F0%9F%87%A8%F0%9F%87%A6%20Canada%20%C2%B7%20Toronto%20%C2%B7%20ea98169a
